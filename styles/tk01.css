@@ -135,6 +135,17 @@ input[type="file"]::file-selector-button:hover {
   transform: scaleX(-1);
 }
 
+.ornamento-folhas__grupo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: balanco-das-folhas 6s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.ornamento-folhas--direita .ornamento-folhas__grupo {
+  animation-delay: -3s;
+}
+
 .ornamento-folhas__folha--suave {
   fill: var(--cor-accent-soft);
 }
@@ -152,6 +163,16 @@ input[type="file"]::file-selector-button:hover {
   stroke: var(--cor-divider);
   stroke-linecap: round;
   stroke-width: 4;
+}
+
+@keyframes balanco-das-folhas {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  to {
+    transform: translateY(calc(var(--espaco-1) * -1)) rotate(2deg);
+  }
 }
 
 .sobretitulo {
@@ -601,6 +622,10 @@ input[type="radio"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ornamento-folhas__grupo {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

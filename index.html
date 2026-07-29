@@ -17,24 +17,37 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nunito+Sans:wght@400;500;600;700&display=swap"
     >
     <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/tk01.css">
   </head>
 
   <body>
-    <header>
-      <p>Profile Analytics — Health</p>
+    <header class="cabecalho">
+      <div class="container cabecalho__conteudo">
+        <p class="marca">Profile Analytics — Health</p>
+        <p class="cabecalho__status">Análise local · sem conta</p>
+      </div>
     </header>
 
-    <main>
-      <section aria-labelledby="titulo-boas-vindas">
-        <p>Boas-vindas</p>
-        <h1 id="titulo-boas-vindas">Gere seu perfil de análise</h1>
-        <p>
-          Informe seu nome, escolha uma foto e adicione os dados da sua
-          corrida. O processamento será feito no navegador.
-        </p>
+    <main class="conteudo-principal">
+      <section
+        class="container boas-vindas"
+        aria-labelledby="titulo-boas-vindas"
+      >
+        <div class="boas-vindas__introducao">
+          <p class="sobretitulo">Boas-vindas · Entrada de dados</p>
+          <h1 id="titulo-boas-vindas">Gere seu perfil de análise</h1>
+          <p class="boas-vindas__resumo">
+            Informe seu nome, escolha uma foto e adicione os dados da sua
+            corrida. O processamento será feito no navegador.
+          </p>
+        </div>
 
-        <form id="formulario-perfil-de-analise" novalidate>
-          <div>
+        <form
+          class="cartao-formulario"
+          id="formulario-perfil-de-analise"
+          novalidate
+        >
+          <div class="grupo-de-campo">
             <label for="nome-ou-apelido">Nome ou apelido</label>
             <input
               id="nome-ou-apelido"
@@ -44,10 +57,14 @@
               required
               aria-describedby="erro-nome-ou-apelido"
             >
-            <p id="erro-nome-ou-apelido" aria-live="polite"></p>
+            <p
+              class="erro"
+              id="erro-nome-ou-apelido"
+              aria-live="polite"
+            ></p>
           </div>
 
-          <div>
+          <div class="grupo-de-campo">
             <label for="foto-de-perfil">Foto de perfil</label>
             <input
               id="foto-de-perfil"
@@ -57,38 +74,50 @@
               required
               aria-describedby="ajuda-foto-de-perfil erro-foto-de-perfil"
             >
-            <p id="ajuda-foto-de-perfil">Arquivo de imagem de até 2 MB.</p>
-            <p id="erro-foto-de-perfil" aria-live="polite"></p>
+            <p class="ajuda" id="ajuda-foto-de-perfil">
+              Arquivo de imagem de até 2 MB.
+            </p>
+            <p
+              class="erro"
+              id="erro-foto-de-perfil"
+              aria-live="polite"
+            ></p>
           </div>
 
-          <fieldset>
+          <fieldset class="fonte-de-dados">
             <legend>Fonte de Dados da Corrida</legend>
 
-            <label>
-              <input
-                type="radio"
-                name="fonteDeDadosDaCorrida"
-                value="planilha-de-tempos"
-                checked
-              >
-              Usar planilha de tempos
-            </label>
+            <div class="fonte-de-dados__opcoes">
+              <label class="opcao-de-fonte">
+                <input
+                  type="radio"
+                  name="fonteDeDadosDaCorrida"
+                  value="planilha-de-tempos"
+                  checked
+                >
+                Usar planilha de tempos
+              </label>
 
-            <label>
-              <input
-                type="radio"
-                name="fonteDeDadosDaCorrida"
-                value="preenchimento-manual"
-              >
-              Preencher manualmente
-            </label>
+              <label class="opcao-de-fonte">
+                <input
+                  type="radio"
+                  name="fonteDeDadosDaCorrida"
+                  value="preenchimento-manual"
+                >
+                Preencher manualmente
+              </label>
+            </div>
           </fieldset>
 
           <section
+            class="entrada-de-dados"
             id="entrada-planilha-de-tempos"
             aria-labelledby="titulo-planilha-de-tempos"
           >
             <h2 id="titulo-planilha-de-tempos">Planilha de tempos</h2>
+            <p class="entrada-de-dados__descricao">
+              Envie o template com seus registros de corrida.
+            </p>
             <label for="planilha-de-tempos">Template .xlsx</label>
             <input
               id="planilha-de-tempos"
@@ -98,36 +127,74 @@
               required
               aria-describedby="ajuda-planilha-de-tempos erro-planilha-de-tempos"
             >
-            <p id="ajuda-planilha-de-tempos">Arquivo .xlsx de até 2 MB.</p>
-            <p id="erro-planilha-de-tempos" aria-live="polite"></p>
+            <p class="ajuda" id="ajuda-planilha-de-tempos">
+              Arquivo .xlsx de até 2 MB.
+            </p>
+            <p
+              class="erro"
+              id="erro-planilha-de-tempos"
+              aria-live="polite"
+            ></p>
           </section>
 
           <section
+            class="entrada-de-dados"
             id="entrada-preenchimento-manual"
             aria-labelledby="titulo-preenchimento-manual"
             hidden
           >
             <h2 id="titulo-preenchimento-manual">Preenchimento manual</h2>
-            <p>
+            <p class="entrada-de-dados__descricao">
               Esta alternativa terá os mesmos campos do template .xlsx.
             </p>
-            <div id="campos-da-planilha" aria-live="polite"></div>
-            <p id="erro-preenchimento-manual" aria-live="polite"></p>
+            <div
+              class="pendencia-manual"
+              id="campos-da-planilha"
+              aria-live="polite"
+            ></div>
+            <p
+              class="erro"
+              id="erro-preenchimento-manual"
+              aria-live="polite"
+            ></p>
           </section>
 
-          <button type="submit">Gerar Análise</button>
+          <button class="acao-principal" type="submit">Gerar Análise</button>
+          <p class="nota-de-privacidade">
+            Seus arquivos permanecem neste dispositivo durante a análise.
+          </p>
         </form>
       </section>
     </main>
 
-    <div id="toast" role="status" aria-live="polite" hidden>
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
       <p id="mensagem-toast"></p>
     </div>
 
-    <dialog id="modal-processando" aria-labelledby="titulo-processando">
+    <dialog
+      class="modal-processando"
+      id="modal-processando"
+      aria-labelledby="titulo-processando"
+    >
       <h2 id="titulo-processando">Processando dados</h2>
       <p>Aguarde, processando dados...</p>
     </dialog>
+
+    <footer class="rodape">
+      <div class="container rodape__conteudo">
+        <div>
+          <p class="marca">Profile Analytics — Health</p>
+          <p>Análise rápida para atletas amadores.</p>
+        </div>
+        <p class="rodape__meta">100% client-side · ficha temporária</p>
+      </div>
+    </footer>
 
     <script type="module" src="js/tk01.js"></script>
   </body>

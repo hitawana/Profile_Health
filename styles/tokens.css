@@ -1,13 +1,48 @@
-/**
- * Fonte: decisão D-001.
- *
- * Cores e espaçamentos não são definidos aqui enquanto o Design System
- * externo (D-002) não estiver disponível.
- */
 :root {
+  color-scheme: light;
+
   --fonte-corpo: "Nunito Sans", "Inter", sans-serif;
   --fonte-titulo: "Nunito Sans", "Inter", sans-serif;
   --fonte-dados: "IBM Plex Mono", "Inter", monospace;
+
+  --cor-accent: #a84628;
+  --cor-accent-soft: #e7b99f;
+  --cor-background: #f4efe6;
+  --cor-surface: #fffdf8;
+  --cor-support: #e7ddd0;
+  --cor-divider: #c9bbaa;
+  --cor-texto-primario: #1e1b18;
+  --cor-texto-secundario: #5c5148;
+  --cor-texto-sobre-accent: #ffffff;
+
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+  --espaco-5: 24px;
+  --espaco-6: 32px;
+  --espaco-7: 48px;
+  --espaco-8: 64px;
+  --espaco-9: 96px;
+  --espaco-10: 128px;
+
+  --raio-pequeno: 4px;
+  --raio-medio: 8px;
+  --raio-grande: 16px;
+
+  --sombra-suave: 0 2px 4px rgb(0 0 0 / 10%);
+  --sombra-card: 0 8px 24px rgb(30 27 24 / 12%);
+  --sombra-elevada: 0 10px 15px rgb(0 0 0 / 10%);
+
+  --controle-sm: 36px;
+  --controle-md: 44px;
+  --controle-lg: 52px;
+  --input-padrao: 48px;
+  --alvo-preferido: 44px;
+
+  --container-maximo: 1280px;
+  --largura-leitura: 68ch;
+  --largura-introducao: 52ch;
 }
 
 html {
@@ -34,4 +69,3 @@ h6 {
   font-family: var(--fonte-dados);
   font-variant-numeric: tabular-nums;
 }
-

@@ -1,0 +1,37 @@
+/**
+ * Fonte: decisão D-001.
+ *
+ * Cores e espaçamentos não são definidos aqui enquanto o Design System
+ * externo (D-002) não estiver disponível.
+ */
+:root {
+  --fonte-corpo: "Nunito Sans", "Inter", sans-serif;
+  --fonte-titulo: "Nunito Sans", "Inter", sans-serif;
+  --fonte-dados: "IBM Plex Mono", "Inter", monospace;
+}
+
+html {
+  font-family: var(--fonte-corpo);
+}
+
+body,
+button,
+input {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--fonte-titulo);
+}
+
+.dado-de-corrida,
+.kpi {
+  font-family: var(--fonte-dados);
+  font-variant-numeric: tabular-nums;
+}
+

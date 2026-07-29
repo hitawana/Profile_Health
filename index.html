@@ -7,7 +7,7 @@
       name="description"
       content="Gere um perfil temporário de análise com seus dados de corrida."
     >
-    <title>Boas-vindas | Profile Analytics — Health</title>
+    <title>Boas-vindas | Profile Analytics</title>
     <link rel="icon" href="data:,">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,26 +21,107 @@
   </head>
 
   <body>
-    <header class="cabecalho">
-      <div class="container cabecalho__conteudo">
-        <p class="marca">Profile Analytics — Health</p>
-        <p class="cabecalho__status">Análise local · sem conta</p>
-      </div>
-    </header>
-
     <main class="conteudo-principal">
       <section
         class="container boas-vindas"
         aria-labelledby="titulo-boas-vindas"
       >
         <div class="boas-vindas__introducao">
-          <p class="sobretitulo">Boas-vindas · Entrada de dados</p>
-          <h1 id="titulo-boas-vindas">Gere seu perfil de análise</h1>
-          <p class="boas-vindas__resumo">
-            Informe seu nome, escolha uma foto e adicione os dados da sua
-            corrida. O processamento será feito no navegador.
-          </p>
+          <svg
+            class="ornamento-folhas ornamento-folhas--esquerda"
+            viewBox="0 0 240 220"
+            aria-hidden="true"
+            focusable="false"
+          >
+              <path
+                class="ornamento-folhas__folha--suave"
+                d="M24 174C32 118 75 88 118 102C112 148 76 178 24 174Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--support"
+                d="M80 76C93 30 133 18 166 38C151 74 120 91 80 76Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--accent"
+                d="M125 142C148 95 193 88 222 116C201 150 165 160 125 142Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--support"
+                d="M76 194C92 153 128 142 158 163C142 193 113 207 76 194Z"
+              ></path>
+              <path
+                class="ornamento-folhas__nervura"
+                d="M30 170C90 130 137 84 160 42M106 160C148 140 180 123 214 118"
+              ></path>
+          </svg>
+
+          <div class="boas-vindas__conteudo">
+            <p class="sobretitulo">Boas-vindas · Entrada de dados</p>
+            <h1 id="titulo-boas-vindas">Gere seu perfil de análise</h1>
+            <p class="boas-vindas__resumo">
+              Informe seu nome, escolha uma foto e adicione os dados da sua
+              corrida. O processamento será feito no navegador.
+            </p>
+          </div>
+
+          <svg
+            class="ornamento-folhas ornamento-folhas--direita"
+            viewBox="0 0 240 220"
+            aria-hidden="true"
+            focusable="false"
+          >
+              <path
+                class="ornamento-folhas__folha--suave"
+                d="M24 174C32 118 75 88 118 102C112 148 76 178 24 174Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--support"
+                d="M80 76C93 30 133 18 166 38C151 74 120 91 80 76Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--accent"
+                d="M125 142C148 95 193 88 222 116C201 150 165 160 125 142Z"
+              ></path>
+              <path
+                class="ornamento-folhas__folha--support"
+                d="M76 194C92 153 128 142 158 163C142 193 113 207 76 194Z"
+              ></path>
+              <path
+                class="ornamento-folhas__nervura"
+                d="M30 170C90 130 137 84 160 42M106 160C148 140 180 123 214 118"
+              ></path>
+          </svg>
         </div>
+
+        <section
+          class="noticias-de-corrida"
+          aria-labelledby="titulo-noticias-de-corrida"
+        >
+          <div class="noticias-de-corrida__cabecalho">
+            <p class="etiqueta">Conteúdo externo</p>
+            <h2 id="titulo-noticias-de-corrida">
+              Notícias sobre corrida
+            </h2>
+          </div>
+
+          <div class="noticias-de-corrida__grade">
+            <article class="cartao-noticia">
+              <p class="estado-em-desenvolvimento">
+                EM DESENVOLVIMENTO
+              </p>
+            </article>
+            <article class="cartao-noticia">
+              <p class="estado-em-desenvolvimento">
+                EM DESENVOLVIMENTO
+              </p>
+            </article>
+            <article class="cartao-noticia">
+              <p class="estado-em-desenvolvimento">
+                EM DESENVOLVIMENTO
+              </p>
+            </article>
+          </div>
+        </section>
 
         <form
           class="cartao-formulario"
@@ -60,26 +141,60 @@
             <p
               class="erro"
               id="erro-nome-ou-apelido"
+              aria-atomic="true"
               aria-live="polite"
             ></p>
           </div>
 
-          <div class="grupo-de-campo">
+          <div class="grupo-de-campo foto-de-perfil">
             <label for="foto-de-perfil">Foto de perfil</label>
-            <input
-              id="foto-de-perfil"
-              name="fotoDePerfil"
-              type="file"
-              accept="image/*"
-              required
-              aria-describedby="ajuda-foto-de-perfil erro-foto-de-perfil"
-            >
-            <p class="ajuda" id="ajuda-foto-de-perfil">
-              Arquivo de imagem de até 2 MB.
-            </p>
+            <div class="foto-de-perfil__conteudo">
+              <div
+                class="preview-foto"
+                id="preview-foto"
+                aria-label="Prévia da foto de perfil"
+              >
+                <div
+                  class="preview-foto__placeholder"
+                  id="preview-foto-placeholder"
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 48 48"
+                    width="48"
+                    height="48"
+                  >
+                    <rect x="5" y="7" width="38" height="34" rx="4"></rect>
+                    <circle cx="18" cy="19" r="5"></circle>
+                    <path d="M9 35l10-9 7 6 5-4 8 7"></path>
+                  </svg>
+                  <span>Prévia</span>
+                </div>
+                <img
+                  id="preview-foto-imagem"
+                  alt="Prévia da foto de perfil selecionada"
+                  hidden
+                >
+              </div>
+
+              <div class="foto-de-perfil__controle">
+                <input
+                  id="foto-de-perfil"
+                  name="fotoDePerfil"
+                  type="file"
+                  accept="image/*"
+                  required
+                  aria-describedby="ajuda-foto-de-perfil erro-foto-de-perfil"
+                >
+                <p class="ajuda" id="ajuda-foto-de-perfil">
+                  Arquivo de imagem de até 2 MB.
+                </p>
+              </div>
+            </div>
             <p
               class="erro"
               id="erro-foto-de-perfil"
+              aria-atomic="true"
               aria-live="polite"
             ></p>
           </div>
@@ -133,6 +248,7 @@
             <p
               class="erro"
               id="erro-planilha-de-tempos"
+              aria-atomic="true"
               aria-live="polite"
             ></p>
           </section>
@@ -141,12 +257,10 @@
             class="entrada-de-dados"
             id="entrada-preenchimento-manual"
             aria-labelledby="titulo-preenchimento-manual"
+            tabindex="-1"
             hidden
           >
             <h2 id="titulo-preenchimento-manual">Preenchimento manual</h2>
-            <p class="entrada-de-dados__descricao">
-              Esta alternativa terá os mesmos campos do template .xlsx.
-            </p>
             <div
               class="pendencia-manual"
               id="campos-da-planilha"
@@ -155,14 +269,12 @@
             <p
               class="erro"
               id="erro-preenchimento-manual"
+              aria-atomic="true"
               aria-live="polite"
             ></p>
           </section>
 
           <button class="acao-principal" type="submit">Gerar Análise</button>
-          <p class="nota-de-privacidade">
-            Seus arquivos permanecem neste dispositivo durante a análise.
-          </p>
         </form>
       </section>
     </main>
@@ -171,7 +283,9 @@
       class="toast"
       id="toast"
       role="status"
+      aria-atomic="true"
       aria-live="polite"
+      data-estado="status"
       hidden
     >
       <p id="mensagem-toast"></p>
@@ -189,10 +303,26 @@
     <footer class="rodape">
       <div class="container rodape__conteudo">
         <div>
-          <p class="marca">Profile Analytics — Health</p>
+          <p class="marca">Profile Analytics</p>
           <p>Análise rápida para atletas amadores.</p>
         </div>
-        <p class="rodape__meta">100% client-side · ficha temporária</p>
+        <div class="rodape__pessoal">
+          <p class="rodape__identidade">@Hitawana</p>
+          <nav class="rodape__links" aria-label="Links pessoais">
+            <a
+              class="rodape__link-pendente"
+              aria-disabled="true"
+            >
+              LinkedIn [LINK A DEFINIR]
+            </a>
+            <a
+              class="rodape__link-pendente"
+              aria-disabled="true"
+            >
+              GitHub [LINK A DEFINIR]
+            </a>
+          </nav>
+        </div>
       </div>
     </footer>
 

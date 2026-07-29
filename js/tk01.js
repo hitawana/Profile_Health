@@ -7,6 +7,10 @@ import {
 const formulario = document.querySelector("#formulario-perfil-de-analise");
 const nomeOuApelido = document.querySelector("#nome-ou-apelido");
 const fotoDePerfil = document.querySelector("#foto-de-perfil");
+const previewFotoImagem = document.querySelector("#preview-foto-imagem");
+const previewFotoPlaceholder = document.querySelector(
+  "#preview-foto-placeholder",
+);
 const planilhaDeTempos = document.querySelector("#planilha-de-tempos");
 const fontesDeDadosDaCorrida = document.querySelectorAll(
   'input[name="fonteDeDadosDaCorrida"]',
@@ -29,6 +33,7 @@ const mensagemToast = document.querySelector("#mensagem-toast");
 const modalProcessando = document.querySelector("#modal-processando");
 
 let temporizadorDoToast;
+let enderecoDaPreviewDaFoto;
 
 function fonteDeDadosSelecionada() {
   return document.querySelector(
@@ -41,8 +46,8 @@ function preencherCamposManuais() {
 
   if (CAMPOS_DA_PLANILHA_DE_TEMPOS.length === 0) {
     const aviso = document.createElement("p");
-    aviso.textContent =
-      "Os campos serão disponibilizados quando o template .xlsx definir as colunas da planilha de tempos.";
+    aviso.className = "estado-em-desenvolvimento";
+    aviso.textContent = "EM DESENVOLVIMENTO";
     camposDaPlanilha.append(aviso);
     return;
   }
@@ -74,15 +79,18 @@ function alternarFonteDeDados() {
   planilhaDeTempos.required = !preenchimentoManualAtivo;
 
   entradaManual.hidden = !preenchimentoManualAtivo;
-  erroPlanilha.textContent = "";
-  erroPreenchimentoManual.textContent = "";
+  definirErro(planilhaDeTempos, erroPlanilha, "");
+  definirErro(null, erroPreenchimentoManual, "");
 }
 
 function mostrarToast(mensagem, tipo = "status") {
   window.clearTimeout(temporizadorDoToast);
 
-  mensagemToast.textContent = mensagem;
+  const estadoDeErro = tipo === "alert";
+
+  mensagemToast.textContent = estadoDeErro ? `Erro: ${mensagem}` : mensagem;
   toast.setAttribute("role", tipo);
+  toast.dataset.estado = estadoDeErro ? "erro" : "status";
   toast.hidden = false;
 
   temporizadorDoToast = window.setTimeout(() => {
@@ -90,9 +98,49 @@ function mostrarToast(mensagem, tipo = "status") {
   }, 5000);
 }
 
-function definirErro(elementoDoErro, mensagem) {
-  elementoDoErro.textContent = mensagem;
-  return Boolean(mensagem);
+function definirErro(campo, elementoDoErro, mensagem) {
+  const possuiErro = Boolean(mensagem);
+  const estadoEmDesenvolvimento = mensagem === "EM DESENVOLVIMENTO";
+
+  elementoDoErro.textContent = possuiErro
+    ? estadoEmDesenvolvimento
+      ? mensagem
+      : `Erro: ${mensagem}`
+    : "";
+
+  if (campo) {
+    if (possuiErro) {
+      campo.setAttribute("aria-invalid", "true");
+    } else {
+      campo.removeAttribute("aria-invalid");
+    }
+  }
+
+  return possuiErro;
+}
+
+function limparPreviewDaFoto() {
+  if (enderecoDaPreviewDaFoto) {
+    URL.revokeObjectURL(enderecoDaPreviewDaFoto);
+    enderecoDaPreviewDaFoto = undefined;
+  }
+
+  previewFotoImagem.removeAttribute("src");
+  previewFotoImagem.hidden = true;
+  previewFotoPlaceholder.hidden = false;
+}
+
+function atualizarPreviewDaFoto(arquivo) {
+  limparPreviewDaFoto();
+
+  if (!arquivo || validarFotoDePerfil(arquivo)) {
+    return;
+  }
+
+  enderecoDaPreviewDaFoto = URL.createObjectURL(arquivo);
+  previewFotoImagem.src = enderecoDaPreviewDaFoto;
+  previewFotoImagem.hidden = false;
+  previewFotoPlaceholder.hidden = true;
 }
 
 function validarNomeOuApelido() {
@@ -103,7 +151,7 @@ function validarNomeOuApelido() {
 
 function validarPreenchimentoManual() {
   if (CAMPOS_DA_PLANILHA_DE_TEMPOS.length === 0) {
-    return "O preenchimento manual aguarda a definição das colunas do template .xlsx.";
+    return "EM DESENVOLVIMENTO";
   }
 
   return "";
@@ -124,9 +172,7 @@ function abrirModalDeProcessamento() {
       modalProcessando.removeAttribute("open");
     }
 
-    mostrarToast(
-      "Dados de entrada validados. A leitura da planilha será adicionada quando o template estiver disponível.",
-    );
+    mostrarToast("EM DESENVOLVIMENTO");
   }, 1000);
 }
 
@@ -138,11 +184,15 @@ function validarFormulario() {
     ? validarPreenchimentoManual()
     : validarPlanilhaDeTempos(planilhaDeTempos.files[0]);
 
-  const nomeInvalido = definirErro(erroNome, erroDoNome);
-  const fotoInvalida = definirErro(erroFoto, erroDaFoto);
+  const nomeInvalido = definirErro(nomeOuApelido, erroNome, erroDoNome);
+  const fotoInvalida = definirErro(
+    fotoDePerfil,
+    erroFoto,
+    erroDaFoto,
+  );
   const dadosInvalidos = manualAtivo
-    ? definirErro(erroPreenchimentoManual, erroDosDados)
-    : definirErro(erroPlanilha, erroDosDados);
+    ? definirErro(null, erroPreenchimentoManual, erroDosDados)
+    : definirErro(planilhaDeTempos, erroPlanilha, erroDosDados);
 
   if (nomeInvalido) {
     nomeOuApelido.focus();
@@ -164,19 +214,47 @@ for (const fonteDeDados of fontesDeDadosDaCorrida) {
 }
 
 fotoDePerfil.addEventListener("change", () => {
-  definirErro(erroFoto, validarFotoDePerfil(fotoDePerfil.files[0]));
+  const arquivo = fotoDePerfil.files[0];
+  const erro = validarFotoDePerfil(arquivo);
+
+  definirErro(fotoDePerfil, erroFoto, erro);
+  atualizarPreviewDaFoto(arquivo);
+
+  if (erro) {
+    mostrarToast(erro, "alert");
+  }
+});
+
+previewFotoImagem.addEventListener("error", () => {
+  limparPreviewDaFoto();
+  definirErro(
+    fotoDePerfil,
+    erroFoto,
+    "A foto selecionada é inválida ou está corrompida.",
+  );
+  mostrarToast(
+    "A foto selecionada é inválida ou está corrompida.",
+    "alert",
+  );
 });
 
 planilhaDeTempos.addEventListener("change", () => {
+  const erro = validarPlanilhaDeTempos(planilhaDeTempos.files[0]);
+
   definirErro(
+    planilhaDeTempos,
     erroPlanilha,
-    validarPlanilhaDeTempos(planilhaDeTempos.files[0]),
+    erro,
   );
+
+  if (erro) {
+    mostrarToast(erro, "alert");
+  }
 });
 
 nomeOuApelido.addEventListener("input", () => {
   if (nomeOuApelido.value.trim()) {
-    erroNome.textContent = "";
+    definirErro(nomeOuApelido, erroNome, "");
   }
 });
 

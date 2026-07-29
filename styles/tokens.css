@@ -2,7 +2,7 @@
   color-scheme: light;
 
   --fonte-corpo: "Nunito Sans", "Inter", sans-serif;
-  --fonte-titulo: "Nunito Sans", "Inter", sans-serif;
+  --fonte-titulo: Georgia, "Times New Roman", serif;
   --fonte-dados: "IBM Plex Mono", "Inter", monospace;
 
   --cor-accent: #a84628;
@@ -14,6 +14,7 @@
   --cor-texto-primario: #1e1b18;
   --cor-texto-secundario: #5c5148;
   --cor-texto-sobre-accent: #ffffff;
+  --cor-erro: #c83728;
 
   --espaco-1: 4px;
   --espaco-2: 8px;

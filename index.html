@@ -237,6 +237,13 @@
             <p class="entrada-de-dados__descricao">
               Envie o template com seus registros de corrida.
             </p>
+            <a
+              class="link-download-template"
+              href="assets/templates/planilha_corrida.xlsx"
+              download="planilha_corrida.xlsx"
+            >
+              Baixar template .xlsx
+            </a>
             <label for="planilha-de-tempos">Template .xlsx</label>
             <input
               id="planilha-de-tempos"
@@ -265,11 +272,26 @@
             hidden
           >
             <h2 id="titulo-preenchimento-manual">Preenchimento manual</h2>
+            <p class="entrada-de-dados__descricao">
+              Adicione uma linha por corrida.
+            </p>
             <div
-              class="pendencia-manual"
+              class="corridas-manuais"
               id="campos-da-planilha"
-              aria-live="polite"
             ></div>
+            <button
+              class="acao-secundaria adicionar-corrida"
+              id="adicionar-corrida"
+              type="button"
+            >
+              Adicionar outra corrida
+            </button>
+            <p
+              class="ajuda"
+              id="estado-preenchimento-manual"
+              aria-atomic="true"
+              aria-live="polite"
+            ></p>
             <p
               class="erro"
               id="erro-preenchimento-manual"

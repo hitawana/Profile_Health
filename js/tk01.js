@@ -3,16 +3,39 @@ import {
   validarValorDaColuna,
 } from "./campos-da-planilha-de-tempos.js";
 import {
+  extrairCorridasDaPlanilha,
+  extrairCorridasDoPreenchimentoManual,
+} from "./extracao-de-corridas.js";
+import {
+  calcularRitmoProjetado,
+} from "./estimativa-de-ritmo.js";
+import {
+  adicionarRitmoProjetadoAoHistorico,
+  renderizarHistoricoDeRitmo,
+} from "./historico-de-ritmo.js";
+import {
+  CAMPOS_DA_META_DA_PROXIMA_CORRIDA,
+  criarMetaDaProximaCorrida,
+  validarValorDoCampoDaMetaDaProximaCorrida,
+} from "./meta-da-proxima-corrida.js";
+import { formatarRitmoPace } from "./ritmo-pace.js";
+import {
   validarFotoDePerfil,
   validarPlanilhaDeTempos,
 } from "./validacao-de-arquivos.js";
 
+const telaDeEntrada = document.querySelector("#tela-de-entrada");
+const painelAnalitico = document.querySelector("#painel-analitico");
 const formulario = document.querySelector("#formulario-perfil-de-analise");
 const nomeOuApelido = document.querySelector("#nome-ou-apelido");
 const fotoDePerfil = document.querySelector("#foto-de-perfil");
 const previewFotoImagem = document.querySelector("#preview-foto-imagem");
 const previewFotoPlaceholder = document.querySelector(
   "#preview-foto-placeholder",
+);
+const avatarDoCta = document.querySelector("#avatar-do-cta");
+const avatarDoCtaPlaceholder = document.querySelector(
+  "#avatar-do-cta-placeholder",
 );
 const planilhaDeTempos = document.querySelector("#planilha-de-tempos");
 const fontesDeDadosDaCorrida = document.querySelectorAll(
@@ -26,6 +49,12 @@ const entradaManual = document.querySelector(
 );
 const camposDaPlanilha = document.querySelector("#campos-da-planilha");
 const adicionarCorrida = document.querySelector("#adicionar-corrida");
+const formularioMetaDaProximaCorrida = document.querySelector(
+  ".meta-da-proxima-corrida",
+);
+const camposDaMetaDaProximaCorrida = document.querySelectorAll(
+  "input[data-campo-da-meta]",
+);
 const estadoPreenchimentoManual = document.querySelector(
   "#estado-preenchimento-manual",
 );
@@ -38,13 +67,63 @@ const erroPreenchimentoManual = document.querySelector(
 const toast = document.querySelector("#toast");
 const mensagemToast = document.querySelector("#mensagem-toast");
 const modalProcessando = document.querySelector("#modal-processando");
+const fotoDoPainel = document.querySelector("#foto-do-painel");
+const tituloDoPainel = document.querySelector("#titulo-do-painel");
+const resumoDoPainel = document.querySelector("#resumo-do-painel");
+const ritmoProjetado = document.querySelector("#ritmo-projetado");
+const distanciaMediaHistorica = document.querySelector(
+  "#distancia-media-historica",
+);
+const distanciaDaMeta = document.querySelector("#distancia-da-meta");
+const margemDeTolerancia = document.querySelector(
+  "#margem-de-tolerancia",
+);
+const gatilhoAcionado = document.querySelector("#gatilho-acionado");
+const formulaAplicada = document.querySelector("#formula-aplicada");
+const tempoTotalEstimado = document.querySelector(
+  "#tempo-total-estimado",
+);
+const graficoDoHistoricoDeRitmo = document.querySelector(
+  "#grafico-do-historico-de-ritmo",
+);
+const iniciarNovaAnalise = document.querySelector("#iniciar-nova-analise");
+const fichaMetaNomeDaCorrida = document.querySelector(
+  "#ficha-meta-nome-da-corrida",
+);
+const fichaMetaLocal = document.querySelector("#ficha-meta-local");
+const fichaMetaData = document.querySelector("#ficha-meta-data");
+const fichaMetaHorario = document.querySelector("#ficha-meta-horario");
+const fichaMetaDistancia = document.querySelector("#ficha-meta-distancia");
 
 let temporizadorDoToast;
 let enderecoDaPreviewDaFoto;
 let numeroDaProximaCorrida = 1;
+let instanciaDoGraficoDoHistorico;
+let metaDaProximaCorridaAtual;
+
+const formatadorDeDistancia = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 0,
+});
+
+const formatadorDePercentual = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 0,
+  style: "percent",
+});
+
+const formatadorDaDataDaMeta = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  timeZone: "UTC",
+  year: "numeric",
+});
 
 const camposDaPlanilhaPorNome = new Map(
   CAMPOS_DA_PLANILHA_DE_TEMPOS.map((campo) => [campo.nome, campo]),
+);
+
+const camposDaMetaPorChave = new Map(
+  CAMPOS_DA_META_DA_PROXIMA_CORRIDA.map((campo) => [campo.chave, campo]),
 );
 
 function fonteDeDadosSelecionada() {
@@ -209,6 +288,9 @@ function limparPreviewDaFoto() {
   previewFotoImagem.removeAttribute("src");
   previewFotoImagem.hidden = true;
   previewFotoPlaceholder.hidden = false;
+  avatarDoCta.removeAttribute("src");
+  avatarDoCta.hidden = true;
+  avatarDoCtaPlaceholder.hidden = false;
 }
 
 function atualizarPreviewDaFoto(arquivo) {
@@ -222,6 +304,9 @@ function atualizarPreviewDaFoto(arquivo) {
   previewFotoImagem.src = enderecoDaPreviewDaFoto;
   previewFotoImagem.hidden = false;
   previewFotoPlaceholder.hidden = true;
+  avatarDoCta.src = enderecoDaPreviewDaFoto;
+  avatarDoCta.hidden = false;
+  avatarDoCtaPlaceholder.hidden = true;
 }
 
 function validarNomeOuApelido() {
@@ -251,6 +336,207 @@ function validarPreenchimentoManual() {
   };
 }
 
+function validarCampoDaMetaDaProximaCorrida(entrada) {
+  const campo = camposDaMetaPorChave.get(entrada.dataset.campoDaMeta);
+  const elementoDoErro = document.querySelector(
+    `#${entrada.getAttribute("aria-describedby")}`,
+  );
+  const mensagem = validarValorDoCampoDaMetaDaProximaCorrida(
+    campo,
+    entrada.value,
+  );
+
+  return definirErro(entrada, elementoDoErro, mensagem);
+}
+
+function validarFormularioDaMetaDaProximaCorrida() {
+  let primeiroCampoInvalido;
+
+  for (const entrada of camposDaMetaDaProximaCorrida) {
+    const campoInvalido = validarCampoDaMetaDaProximaCorrida(entrada);
+
+    if (campoInvalido && !primeiroCampoInvalido) {
+      primeiroCampoInvalido = entrada;
+    }
+  }
+
+  return { primeiroCampoInvalido };
+}
+
+function obterMetaDaProximaCorridaInformada() {
+  const valoresInformados = Object.fromEntries(
+    [...camposDaMetaDaProximaCorrida].map((entrada) => [
+      entrada.dataset.campoDaMeta,
+      entrada.value,
+    ]),
+  );
+
+  return criarMetaDaProximaCorrida(valoresInformados);
+}
+
+function obterLinhasDoPreenchimentoManual() {
+  return [...camposDaPlanilha.querySelectorAll(".corrida-manual")].map(
+    (corridaManual) =>
+      [...corridaManual.querySelectorAll("input[data-coluna-da-planilha]")].map(
+        (entrada) => entrada.value,
+      ),
+  );
+}
+
+async function extrairCorridasInformadas() {
+  if (fonteDeDadosSelecionada() === "preenchimento-manual") {
+    return extrairCorridasDoPreenchimentoManual(
+      obterLinhasDoPreenchimentoManual(),
+    );
+  }
+
+  return extrairCorridasDaPlanilha(planilhaDeTempos.files[0]);
+}
+
+function lerTokenNumerico(nomeDoToken) {
+  return Number.parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(nomeDoToken),
+  );
+}
+
+function obterVisualizacaoDoDesignSystem() {
+  const tokens = getComputedStyle(document.documentElement);
+
+  return Object.freeze({
+    corAccent: tokens.getPropertyValue("--cor-accent").trim(),
+    corAccentSoft: tokens.getPropertyValue("--cor-accent-soft").trim(),
+    corDivider: tokens.getPropertyValue("--cor-divider").trim(),
+    corSupport: tokens.getPropertyValue("--cor-support").trim(),
+    corSurface: tokens.getPropertyValue("--cor-surface").trim(),
+    corTextoPrimario: tokens
+      .getPropertyValue("--cor-texto-primario")
+      .trim(),
+    corTextoSecundario: tokens
+      .getPropertyValue("--cor-texto-secundario")
+      .trim(),
+    espaco1: lerTokenNumerico("--espaco-1"),
+    espaco2: lerTokenNumerico("--espaco-2"),
+    espaco3: lerTokenNumerico("--espaco-3"),
+    fonteCorpo: tokens.getPropertyValue("--fonte-corpo").trim(),
+    fonteDados: tokens.getPropertyValue("--fonte-dados").trim(),
+  });
+}
+
+function formatarDistancia(distanciaEmKm) {
+  return `${formatadorDeDistancia.format(distanciaEmKm)} km`;
+}
+
+function formatarTempoTotal(tempoTotalEmSegundos) {
+  const totalArredondado = Math.round(tempoTotalEmSegundos);
+  const horas = Math.floor(totalArredondado / 3600);
+  const minutos = Math.floor((totalArredondado % 3600) / 60);
+  const segundos = totalArredondado % 60;
+
+  return [horas, minutos, segundos]
+    .map((parte) => String(parte).padStart(2, "0"))
+    .join(":");
+}
+
+function formatarDataDaMeta(data) {
+  return data
+    ? formatadorDaDataDaMeta.format(new Date(`${data}T00:00:00Z`))
+    : "—";
+}
+
+function formatarHorarioDaLargada(horarioDaLargada) {
+  return horarioDaLargada ? horarioDaLargada.replace(":", "h") : "—";
+}
+
+function preencherPainelAnalitico(
+  corridasExtraidas,
+  estimativa,
+  metaDaProximaCorrida,
+) {
+  const quantidadeDeCorridas = corridasExtraidas.length;
+
+  fotoDoPainel.src = enderecoDaPreviewDaFoto;
+  fotoDoPainel.alt = `Foto de perfil de ${nomeOuApelido.value.trim()}`;
+  tituloDoPainel.textContent = nomeOuApelido.value.trim();
+  resumoDoPainel.textContent = `${quantidadeDeCorridas} ${
+    quantidadeDeCorridas === 1 ? "corrida analisada" : "corridas analisadas"
+  }.`;
+  ritmoProjetado.textContent = formatarRitmoPace(
+    estimativa.ritmoProjetadoEmSegundosPorKm,
+  );
+  distanciaMediaHistorica.textContent = formatarDistancia(
+    estimativa.distanciaMediaHistoricaKm,
+  );
+  distanciaDaMeta.textContent = formatarDistancia(
+    estimativa.distanciaDaMetaKm,
+  );
+  margemDeTolerancia.textContent = formatadorDePercentual.format(
+    estimativa.margemDeTolerancia,
+  );
+  gatilhoAcionado.textContent = estimativa.gatilhoAcionado;
+  formulaAplicada.textContent = estimativa.formulaAplicada;
+  tempoTotalEstimado.textContent = formatarTempoTotal(
+    estimativa.tempoTotalEstimadoEmSegundos,
+  );
+  fichaMetaNomeDaCorrida.textContent =
+    metaDaProximaCorrida.nomeDaCorrida || "—";
+  fichaMetaLocal.textContent = metaDaProximaCorrida.local || "—";
+  fichaMetaData.textContent = formatarDataDaMeta(metaDaProximaCorrida.data);
+  fichaMetaHorario.textContent = formatarHorarioDaLargada(
+    metaDaProximaCorrida.horarioDaLargada,
+  );
+  fichaMetaDistancia.textContent = formatarDistancia(
+    metaDaProximaCorrida.distanciaKm,
+  );
+}
+
+function exibirPainelAnalitico(corridasExtraidas, metaDaProximaCorrida) {
+  telaDeEntrada.hidden = true;
+  painelAnalitico.hidden = false;
+
+  instanciaDoGraficoDoHistorico?.destroy();
+  instanciaDoGraficoDoHistorico = renderizarHistoricoDeRitmo({
+    bibliotecaChart: window.Chart,
+    canvasDoHistorico: graficoDoHistoricoDeRitmo,
+    corridasExtraidas,
+    visualizacaoDoDesignSystem: obterVisualizacaoDoDesignSystem(),
+  });
+
+  // A estimativa só é calculada depois que o histórico extraído foi renderizado.
+  const estimativa = calcularRitmoProjetado({
+    corridasExtraidas,
+    distanciaDaMetaKm: metaDaProximaCorrida.distanciaKm,
+  });
+
+  adicionarRitmoProjetadoAoHistorico({
+    graficoDoHistorico: instanciaDoGraficoDoHistorico,
+    ritmoProjetadoEmSegundosPorKm:
+      estimativa.ritmoProjetadoEmSegundosPorKm,
+    visualizacaoDoDesignSystem: obterVisualizacaoDoDesignSystem(),
+  });
+
+  metaDaProximaCorridaAtual = metaDaProximaCorrida;
+  preencherPainelAnalitico(
+    corridasExtraidas,
+    estimativa,
+    metaDaProximaCorridaAtual,
+  );
+  document.title = "Painel analítico | Profile Analytics";
+  window.scrollTo({ behavior: "smooth", top: 0 });
+}
+
+function exibirTelaDeEntrada({ moverFoco = false } = {}) {
+  instanciaDoGraficoDoHistorico?.destroy();
+  instanciaDoGraficoDoHistorico = undefined;
+  painelAnalitico.hidden = true;
+  telaDeEntrada.hidden = false;
+  document.title = "Boas-vindas | Profile Analytics";
+  window.scrollTo({ behavior: "smooth", top: 0 });
+
+  if (moverFoco) {
+    nomeOuApelido.focus();
+  }
+}
+
 function abrirModalDeProcessamento() {
   if (typeof modalProcessando.showModal === "function") {
     modalProcessando.showModal();
@@ -258,16 +544,14 @@ function abrirModalDeProcessamento() {
     modalProcessando.setAttribute("open", "");
   }
 
-  // TK-01 valida a entrada, mas ainda não lê o conteúdo da planilha.
-  window.setTimeout(() => {
-    if (typeof modalProcessando.close === "function") {
-      modalProcessando.close();
-    } else {
-      modalProcessando.removeAttribute("open");
-    }
+}
 
-    mostrarToast("EM DESENVOLVIMENTO");
-  }, 1000);
+function fecharModalDeProcessamento() {
+  if (typeof modalProcessando.close === "function") {
+    modalProcessando.close();
+  } else {
+    modalProcessando.removeAttribute("open");
+  }
 }
 
 function validarFormulario() {
@@ -280,6 +564,7 @@ function validarFormulario() {
   const erroDosDados = manualAtivo
     ? validacaoManual.mensagem
     : validarPlanilhaDeTempos(planilhaDeTempos.files[0]);
+  const validacaoDaMeta = validarFormularioDaMetaDaProximaCorrida();
 
   const nomeInvalido = definirErro(nomeOuApelido, erroNome, erroDoNome);
   const fotoInvalida = definirErro(
@@ -290,6 +575,7 @@ function validarFormulario() {
   const dadosInvalidos = manualAtivo
     ? definirErro(null, erroPreenchimentoManual, erroDosDados)
     : definirErro(planilhaDeTempos, erroPlanilha, erroDosDados);
+  const metaInvalida = Boolean(validacaoDaMeta.primeiroCampoInvalido);
 
   if (nomeInvalido) {
     nomeOuApelido.focus();
@@ -301,9 +587,11 @@ function validarFormulario() {
     } else {
       planilhaDeTempos.focus();
     }
+  } else if (metaInvalida) {
+    validacaoDaMeta.primeiroCampoInvalido.focus();
   }
 
-  return !(nomeInvalido || fotoInvalida || dadosInvalidos);
+  return !(nomeInvalido || fotoInvalida || dadosInvalidos || metaInvalida);
 }
 
 for (const fonteDeDados of fontesDeDadosDaCorrida) {
@@ -375,7 +663,23 @@ nomeOuApelido.addEventListener("input", () => {
   }
 });
 
-formulario.addEventListener("submit", (evento) => {
+formularioMetaDaProximaCorrida.addEventListener("change", (evento) => {
+  if (evento.target.matches("input[data-campo-da-meta]")) {
+    validarCampoDaMetaDaProximaCorrida(evento.target);
+  }
+});
+
+formularioMetaDaProximaCorrida.addEventListener("input", (evento) => {
+  if (evento.target.matches('input[data-campo-da-meta][aria-invalid="true"]')) {
+    validarCampoDaMetaDaProximaCorrida(evento.target);
+  }
+});
+
+iniciarNovaAnalise.addEventListener("click", () => {
+  exibirTelaDeEntrada({ moverFoco: true });
+});
+
+formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
   if (!validarFormulario()) {
@@ -386,7 +690,42 @@ formulario.addEventListener("submit", (evento) => {
     return;
   }
 
+  const metaDaProximaCorrida = obterMetaDaProximaCorridaInformada();
+
   abrirModalDeProcessamento();
+
+  try {
+    await new Promise((resolver) => window.requestAnimationFrame(resolver));
+
+    const corridasExtraidas = await extrairCorridasInformadas();
+
+    console.log("Array de corridas extraído:", corridasExtraidas);
+    exibirPainelAnalitico(corridasExtraidas, metaDaProximaCorrida);
+    mostrarToast(
+      `${corridasExtraidas.length} corrida(s) analisada(s) com sucesso.`,
+    );
+  } catch (erro) {
+    const mensagem =
+      erro instanceof Error
+        ? erro.message
+        : "Não foi possível extrair os dados das corridas.";
+    const preenchimentoManualAtivo =
+      fonteDeDadosSelecionada() === "preenchimento-manual";
+
+    exibirTelaDeEntrada();
+
+    if (preenchimentoManualAtivo) {
+      definirErro(null, erroPreenchimentoManual, mensagem);
+      entradaManual.focus();
+    } else {
+      definirErro(planilhaDeTempos, erroPlanilha, mensagem);
+      planilhaDeTempos.focus();
+    }
+
+    mostrarToast(mensagem, "alert");
+  } finally {
+    fecharModalDeProcessamento();
+  }
 });
 
 preencherCamposManuais();

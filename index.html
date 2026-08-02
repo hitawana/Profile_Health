@@ -18,10 +18,52 @@
     >
     <link rel="stylesheet" href="styles/tokens.css">
     <link rel="stylesheet" href="styles/tk01.css">
+    <link rel="stylesheet" href="styles/tk02.css">
   </head>
 
   <body>
-    <main class="conteudo-principal">
+    <svg
+      class="definicoes-de-filtro"
+      width="0"
+      height="0"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <filter
+          id="filtro-goo-cta"
+          x="-30%"
+          y="-50%"
+          width="160%"
+          height="200%"
+          color-interpolation-filters="sRGB"
+        >
+          <feGaussianBlur
+            in="SourceGraphic"
+            stdDeviation="8"
+            result="desfoque"
+          ></feGaussianBlur>
+          <feColorMatrix
+            in="desfoque"
+            mode="matrix"
+            values="
+              1 0 0 0 0
+              0 1 0 0 0
+              0 0 1 0 0
+              0 0 0 22 -10
+            "
+            result="goo"
+          ></feColorMatrix>
+          <feComposite
+            in="SourceGraphic"
+            in2="goo"
+            operator="atop"
+          ></feComposite>
+        </filter>
+      </defs>
+    </svg>
+
+    <main class="conteudo-principal" id="tela-de-entrada">
       <section
         class="container boas-vindas"
         aria-labelledby="titulo-boas-vindas"
@@ -97,136 +139,122 @@
           </svg>
         </div>
 
-        <section
-          class="noticias-de-corrida"
-          aria-labelledby="titulo-noticias-de-corrida"
-        >
-          <div class="noticias-de-corrida__cabecalho">
-            <p class="etiqueta">Conteúdo externo</p>
-            <h2 id="titulo-noticias-de-corrida">
-              Notícias sobre corrida
-            </h2>
-          </div>
-
-          <div class="noticias-de-corrida__grade">
-            <article class="cartao-noticia">
-              <p class="estado-em-desenvolvimento">
-                EM DESENVOLVIMENTO
-              </p>
-            </article>
-            <article class="cartao-noticia">
-              <p class="estado-em-desenvolvimento">
-                EM DESENVOLVIMENTO
-              </p>
-            </article>
-            <article class="cartao-noticia">
-              <p class="estado-em-desenvolvimento">
-                EM DESENVOLVIMENTO
-              </p>
-            </article>
-          </div>
-        </section>
-
         <form
           class="cartao-formulario"
           id="formulario-perfil-de-analise"
           novalidate
         >
-          <div class="grupo-de-campo">
-            <label for="nome-ou-apelido">Nome ou apelido</label>
-            <input
-              id="nome-ou-apelido"
-              name="nomeOuApelido"
-              type="text"
-              autocomplete="name"
-              required
-              aria-describedby="erro-nome-ou-apelido"
-            >
-            <p
-              class="erro"
-              id="erro-nome-ou-apelido"
-              aria-atomic="true"
-              aria-live="polite"
-            ></p>
-          </div>
-
-          <div class="grupo-de-campo foto-de-perfil">
-            <label for="foto-de-perfil">Foto de perfil</label>
-            <div class="foto-de-perfil__conteudo">
-              <div
-                class="preview-foto"
-                id="preview-foto"
-                aria-label="Prévia da foto de perfil"
-              >
-                <div
-                  class="preview-foto__placeholder"
-                  id="preview-foto-placeholder"
-                >
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 48 48"
-                    width="48"
-                    height="48"
-                  >
-                    <rect x="5" y="7" width="38" height="34" rx="4"></rect>
-                    <circle cx="18" cy="19" r="5"></circle>
-                    <path d="M9 35l10-9 7 6 5-4 8 7"></path>
-                  </svg>
-                  <span>Prévia</span>
-                </div>
-                <img
-                  id="preview-foto-imagem"
-                  alt="Prévia da foto de perfil selecionada"
-                  hidden
-                >
-              </div>
-
-              <div class="foto-de-perfil__controle">
+          <div class="identidade-do-atleta">
+            <div class="identidade-do-atleta__dados">
+              <div class="grupo-de-campo">
+                <label for="nome-ou-apelido">Nome ou apelido</label>
                 <input
-                  id="foto-de-perfil"
-                  name="fotoDePerfil"
-                  type="file"
-                  accept="image/*"
+                  id="nome-ou-apelido"
+                  name="nomeOuApelido"
+                  type="text"
+                  autocomplete="name"
                   required
-                  aria-describedby="ajuda-foto-de-perfil erro-foto-de-perfil"
+                  aria-describedby="erro-nome-ou-apelido"
                 >
-                <p class="ajuda" id="ajuda-foto-de-perfil">
-                  Arquivo de imagem de até 2 MB.
-                </p>
+                <p
+                  class="erro"
+                  id="erro-nome-ou-apelido"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
               </div>
+
+              <fieldset class="fonte-de-dados">
+                <legend>Fonte de Dados da Corrida</legend>
+
+                <div class="fonte-de-dados__opcoes">
+                  <label class="opcao-de-fonte">
+                    <span class="opcao-de-fonte__formas" aria-hidden="true">
+                      <span class="opcao-de-fonte__forma-principal"></span>
+                      <span class="opcao-de-fonte__metaball"></span>
+                    </span>
+                    <span class="opcao-de-fonte__conteudo">
+                      <input
+                        type="radio"
+                        name="fonteDeDadosDaCorrida"
+                        value="planilha-de-tempos"
+                        checked
+                      >
+                      <span>Usar planilha de tempos</span>
+                    </span>
+                  </label>
+
+                  <label class="opcao-de-fonte">
+                    <span class="opcao-de-fonte__formas" aria-hidden="true">
+                      <span class="opcao-de-fonte__forma-principal"></span>
+                      <span class="opcao-de-fonte__metaball"></span>
+                    </span>
+                    <span class="opcao-de-fonte__conteudo">
+                      <input
+                        type="radio"
+                        name="fonteDeDadosDaCorrida"
+                        value="preenchimento-manual"
+                      >
+                      <span>Preencher manualmente</span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
             </div>
-            <p
-              class="erro"
-              id="erro-foto-de-perfil"
-              aria-atomic="true"
-              aria-live="polite"
-            ></p>
+
+            <div class="grupo-de-campo foto-de-perfil">
+              <label for="foto-de-perfil">Foto de perfil</label>
+              <div class="foto-de-perfil__conteudo">
+                <div
+                  class="preview-foto"
+                  id="preview-foto"
+                >
+                  <div
+                    class="preview-foto__placeholder"
+                    id="preview-foto-placeholder"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 48 48"
+                      width="48"
+                      height="48"
+                    >
+                      <rect x="5" y="7" width="38" height="34" rx="4"></rect>
+                      <circle cx="18" cy="19" r="5"></circle>
+                      <path d="M9 35l10-9 7 6 5-4 8 7"></path>
+                    </svg>
+                    <span>Adicionar</span>
+                  </div>
+                  <img
+                    id="preview-foto-imagem"
+                    alt="Prévia da foto de perfil selecionada"
+                    hidden
+                  >
+                  <input
+                    class="preview-foto__entrada"
+                    id="foto-de-perfil"
+                    name="fotoDePerfil"
+                    type="file"
+                    accept="image/*"
+                    required
+                    aria-describedby="ajuda-foto-de-perfil erro-foto-de-perfil"
+                  >
+                </div>
+
+                <div class="foto-de-perfil__controle">
+                  <p class="ajuda" id="ajuda-foto-de-perfil">
+                    até 2 MB
+                  </p>
+                </div>
+              </div>
+              <p
+                class="erro"
+                id="erro-foto-de-perfil"
+                aria-atomic="true"
+                aria-live="polite"
+              ></p>
+            </div>
           </div>
-
-          <fieldset class="fonte-de-dados">
-            <legend>Fonte de Dados da Corrida</legend>
-
-            <div class="fonte-de-dados__opcoes">
-              <label class="opcao-de-fonte">
-                <input
-                  type="radio"
-                  name="fonteDeDadosDaCorrida"
-                  value="planilha-de-tempos"
-                  checked
-                >
-                Usar planilha de tempos
-              </label>
-
-              <label class="opcao-de-fonte">
-                <input
-                  type="radio"
-                  name="fonteDeDadosDaCorrida"
-                  value="preenchimento-manual"
-                >
-                Preencher manualmente
-              </label>
-            </div>
-          </fieldset>
 
           <section
             class="entrada-de-dados"
@@ -300,8 +328,270 @@
             ></p>
           </section>
 
-          <button class="acao-principal" type="submit">Gerar Análise</button>
+          <section
+            class="entrada-de-dados meta-da-proxima-corrida"
+            aria-labelledby="titulo-meta-da-proxima-corrida"
+          >
+            <h2 id="titulo-meta-da-proxima-corrida">
+              Meta da Próxima Corrida
+            </h2>
+            <p class="entrada-de-dados__descricao">
+              Informe os dados da corrida que você pretende realizar.
+            </p>
+            <div class="meta-da-proxima-corrida__campos">
+              <div class="grupo-de-campo">
+                <label for="meta-nome-da-corrida">Nome da Corrida</label>
+                <input
+                  id="meta-nome-da-corrida"
+                  name="metaNomeDaCorrida"
+                  type="text"
+                  data-campo-da-meta="nomeDaCorrida"
+                  aria-describedby="erro-meta-nome-da-corrida"
+                >
+                <p
+                  class="erro"
+                  id="erro-meta-nome-da-corrida"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </div>
+              <div class="grupo-de-campo">
+                <label for="meta-local">Local</label>
+                <input
+                  id="meta-local"
+                  name="metaLocal"
+                  type="text"
+                  data-campo-da-meta="local"
+                  aria-describedby="erro-meta-local"
+                >
+                <p
+                  class="erro"
+                  id="erro-meta-local"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </div>
+              <div class="grupo-de-campo">
+                <label for="meta-data">Data</label>
+                <input
+                  id="meta-data"
+                  name="metaData"
+                  type="date"
+                  min="2000-01-01"
+                  max="2099-12-31"
+                  data-campo-da-meta="data"
+                  aria-describedby="erro-meta-data"
+                >
+                <p
+                  class="erro"
+                  id="erro-meta-data"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </div>
+              <div class="grupo-de-campo">
+                <label for="meta-horario-da-largada">
+                  Horário da Largada
+                </label>
+                <input
+                  id="meta-horario-da-largada"
+                  name="metaHorarioDaLargada"
+                  type="time"
+                  data-campo-da-meta="horarioDaLargada"
+                  aria-describedby="erro-meta-horario-da-largada"
+                >
+                <p
+                  class="erro"
+                  id="erro-meta-horario-da-largada"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </div>
+              <div class="grupo-de-campo">
+                <label for="meta-distancia-km">Distância (km)</label>
+                <input
+                  id="meta-distancia-km"
+                  name="metaDistanciaKm"
+                  type="number"
+                  min="0"
+                  step="any"
+                  inputmode="decimal"
+                  required
+                  data-campo-da-meta="distanciaKm"
+                  aria-describedby="erro-meta-distancia-km"
+                >
+                <p
+                  class="erro"
+                  id="erro-meta-distancia-km"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </div>
+            </div>
+          </section>
+
+          <button
+            class="acao-principal acao-principal--goo"
+            type="submit"
+          >
+            <span class="acao-principal__formas" aria-hidden="true">
+              <span class="acao-principal__forma-principal"></span>
+              <span class="acao-principal__metaball"></span>
+            </span>
+            <span class="acao-principal__conteudo">
+              <span class="acao-principal__avatar" aria-hidden="true">
+                <svg
+                  class="acao-principal__avatar-placeholder"
+                  id="avatar-do-cta-placeholder"
+                  viewBox="0 0 24 24"
+                  focusable="false"
+                >
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path>
+                </svg>
+                <img
+                  class="acao-principal__avatar-imagem"
+                  id="avatar-do-cta"
+                  alt=""
+                  hidden
+                >
+              </span>
+              <span class="acao-principal__texto">Gerar Análise</span>
+              <span class="acao-principal__icone" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M5 12h13M13 7l5 5-5 5"></path>
+                </svg>
+              </span>
+            </span>
+          </button>
         </form>
+      </section>
+    </main>
+
+    <main class="painel-analitico" id="painel-analitico" hidden>
+      <section
+        class="container painel-analitico__conteudo"
+        aria-labelledby="titulo-do-painel"
+      >
+        <header class="cabecalho-do-painel">
+          <div class="cabecalho-do-painel__barra">
+            <p class="sobretitulo">Ficha de Análise</p>
+            <button
+              class="acao-secundaria"
+              id="iniciar-nova-analise"
+              type="button"
+            >
+              Nova análise
+            </button>
+          </div>
+          <div class="perfil-do-painel">
+            <img
+              class="perfil-do-painel__foto"
+              id="foto-do-painel"
+              alt=""
+            >
+            <div class="perfil-do-painel__informacoes">
+              <p class="perfil-do-painel__identificacao">Atleta amador</p>
+              <h1 id="titulo-do-painel">Perfil de análise</h1>
+              <p class="perfil-do-painel__resumo" id="resumo-do-painel"></p>
+            </div>
+          </div>
+        </header>
+
+        <div
+          class="grade-de-kpis"
+          role="list"
+          aria-label="Indicadores da estimativa"
+        >
+          <div class="kpi-resumido" role="listitem">
+            <p>Ritmo Projetado</p>
+            <strong class="kpi" id="ritmo-projetado">—</strong>
+          </div>
+          <div class="kpi-resumido" role="listitem">
+            <p>Distância Média Histórica</p>
+            <strong class="kpi" id="distancia-media-historica">—</strong>
+          </div>
+          <div class="kpi-resumido" role="listitem">
+            <p>Meta</p>
+            <strong class="kpi" id="distancia-da-meta">—</strong>
+          </div>
+          <div class="kpi-resumido" role="listitem">
+            <p>Margem de Tolerância</p>
+            <strong class="kpi" id="margem-de-tolerancia">—</strong>
+          </div>
+        </div>
+
+        <article
+          class="cartao-do-painel ficha-da-meta"
+          aria-labelledby="titulo-da-ficha-da-meta"
+        >
+          <div class="cartao-do-painel__cabecalho">
+            <p class="etiqueta">Ficha de Análise</p>
+            <h2 id="titulo-da-ficha-da-meta">Meta da Próxima Corrida</h2>
+          </div>
+          <dl class="ficha-da-meta__dados">
+            <div>
+              <dt>Nome da Corrida</dt>
+              <dd id="ficha-meta-nome-da-corrida">—</dd>
+            </div>
+            <div>
+              <dt>Local</dt>
+              <dd id="ficha-meta-local">—</dd>
+            </div>
+            <div>
+              <dt>Data</dt>
+              <dd id="ficha-meta-data">—</dd>
+            </div>
+            <div>
+              <dt>Horário da Largada</dt>
+              <dd class="dado-de-corrida" id="ficha-meta-horario">—</dd>
+            </div>
+            <div>
+              <dt>Distância (km)</dt>
+              <dd class="dado-de-corrida" id="ficha-meta-distancia">—</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article
+          class="cartao-do-painel historico-de-ritmo"
+          aria-labelledby="titulo-do-historico"
+        >
+          <div class="cartao-do-painel__cabecalho">
+            <p class="etiqueta">Histórico</p>
+            <h2 id="titulo-do-historico">Evolução do Ritmo (Pace)</h2>
+            <p>Corridas anteriores em ordem cronológica.</p>
+          </div>
+          <div class="historico-de-ritmo__grafico">
+            <canvas id="grafico-do-historico-de-ritmo">
+              Gráfico com a evolução do Ritmo (Pace) das corridas informadas.
+            </canvas>
+          </div>
+        </article>
+
+        <article
+          class="cartao-do-painel decisao-da-estimativa"
+          aria-labelledby="titulo-da-decisao"
+        >
+          <div class="cartao-do-painel__cabecalho">
+            <p class="etiqueta">Roteamento da estimativa</p>
+            <h2 id="titulo-da-decisao">Método aplicado</h2>
+          </div>
+          <dl class="decisao-da-estimativa__dados">
+            <div>
+              <dt>Gatilho acionado</dt>
+              <dd id="gatilho-acionado">—</dd>
+            </div>
+            <div>
+              <dt>Fórmula aplicada</dt>
+              <dd id="formula-aplicada">—</dd>
+            </div>
+            <div>
+              <dt>Tempo total estimado</dt>
+              <dd class="dado-de-corrida" id="tempo-total-estimado">—</dd>
+            </div>
+          </dl>
+        </article>
       </section>
     </main>
 
@@ -352,6 +642,8 @@
       </div>
     </footer>
 
+    <script src="assets/vendor/sheetjs/xlsx.full.min.js"></script>
+    <script src="assets/vendor/chartjs/chart.umd.min.js"></script>
     <script type="module" src="js/tk01.js"></script>
   </body>
 </html>

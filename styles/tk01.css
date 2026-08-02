@@ -358,19 +358,28 @@ input[type="number"] {
 #nome-ou-apelido {
   width: 100%;
   min-height: var(--controle-md);
+}
+
+#nome-ou-apelido,
+.corrida-manual__campos input,
+.meta-da-proxima-corrida__campos input {
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
 
-#nome-ou-apelido:focus-visible {
+#nome-ou-apelido:focus-visible,
+.corrida-manual__campos input:focus-visible,
+.meta-da-proxima-corrida__campos input:focus-visible {
   outline: none;
   border-color: var(--cor-accent);
   box-shadow: 0 0 var(--espaco-3)
     color-mix(in srgb, var(--cor-accent) 24%, transparent);
 }
 
-#nome-ou-apelido[aria-invalid="true"]:focus-visible {
+#nome-ou-apelido[aria-invalid="true"]:focus-visible,
+.corrida-manual__campos input[aria-invalid="true"]:focus-visible,
+.meta-da-proxima-corrida__campos input[aria-invalid="true"]:focus-visible {
   border-color: var(--cor-erro);
   box-shadow: 0 0 var(--espaco-3)
     color-mix(in srgb, var(--cor-erro) 24%, transparent);

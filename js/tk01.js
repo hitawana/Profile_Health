@@ -38,6 +38,39 @@ const avatarDoCtaPlaceholder = document.querySelector(
   "#avatar-do-cta-placeholder",
 );
 const planilhaDeTempos = document.querySelector("#planilha-de-tempos");
+const passoDownloadTemplate = document.querySelector(
+  "#passo-download-template",
+);
+const passoEnvioPlanilha = document.querySelector(
+  "#passo-envio-planilha",
+);
+const baixarTemplateDeCorridas = document.querySelector(
+  "#baixar-template-de-corridas",
+);
+const textoDownloadTemplate = document.querySelector(
+  "#texto-download-template",
+);
+const estadoDownloadTemplate = document.querySelector(
+  "#estado-download-template",
+);
+const controleDeEnvioDaPlanilha = document.querySelector(
+  "#controle-de-envio-da-planilha",
+);
+const nomeDaPlanilhaSelecionada = document.querySelector(
+  "#nome-da-planilha-selecionada",
+);
+const enviarPlanilhaPreenchida = document.querySelector(
+  "#enviar-planilha-preenchida",
+);
+const textoEnvioPlanilha = document.querySelector(
+  "#texto-envio-planilha",
+);
+const progressoDoEnvioDaPlanilha = document.querySelector(
+  "#progresso-do-envio-da-planilha",
+);
+const estadoEnvioPlanilha = document.querySelector(
+  "#estado-envio-planilha",
+);
 const fontesDeDadosDaCorrida = document.querySelectorAll(
   'input[name="fonteDeDadosDaCorrida"]',
 );
@@ -96,10 +129,14 @@ const fichaMetaHorario = document.querySelector("#ficha-meta-horario");
 const fichaMetaDistancia = document.querySelector("#ficha-meta-distancia");
 
 let temporizadorDoToast;
+let temporizadorDoEnvioDaPlanilha;
 let enderecoDaPreviewDaFoto;
 let numeroDaProximaCorrida = 1;
 let instanciaDoGraficoDoHistorico;
 let metaDaProximaCorridaAtual;
+let downloadDoTemplateConcluido = false;
+
+const DURACAO_DO_ENVIO_VISUAL_EM_MS = 900;
 
 const formatadorDeDistancia = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
@@ -241,6 +278,111 @@ function alternarFonteDeDados() {
   entradaManual.hidden = !preenchimentoManualAtivo;
   definirErro(planilhaDeTempos, erroPlanilha, "");
   definirErro(null, erroPreenchimentoManual, "");
+}
+
+function ativarPassoDeEnvioDaPlanilha() {
+  passoDownloadTemplate.dataset.estado = "concluido";
+  passoEnvioPlanilha.dataset.estado = "ativo";
+}
+
+function concluirPassoDeEnvioDaPlanilha() {
+  passoEnvioPlanilha.dataset.estado = "concluido";
+}
+
+function atualizarEstadoVisualDoEnvioDaPlanilha(arquivo, erro = "") {
+  window.clearTimeout(temporizadorDoEnvioDaPlanilha);
+  temporizadorDoEnvioDaPlanilha = undefined;
+  progressoDoEnvioDaPlanilha.hidden = true;
+  progressoDoEnvioDaPlanilha.removeAttribute("aria-valuenow");
+  progressoDoEnvioDaPlanilha.setAttribute(
+    "aria-valuetext",
+    "Aguardando envio",
+  );
+
+  if (downloadDoTemplateConcluido) {
+    ativarPassoDeEnvioDaPlanilha();
+  }
+
+  if (!arquivo) {
+    controleDeEnvioDaPlanilha.dataset.estado = "vazio";
+    nomeDaPlanilhaSelecionada.textContent = "Nenhum arquivo selecionado";
+    textoEnvioPlanilha.textContent = "Selecionar arquivo";
+    estadoEnvioPlanilha.textContent = downloadDoTemplateConcluido
+      ? "Selecione um arquivo .xlsx."
+      : "Conclua o Passo 1 para selecionar o arquivo.";
+    enviarPlanilhaPreenchida.disabled = !downloadDoTemplateConcluido;
+    return;
+  }
+
+  nomeDaPlanilhaSelecionada.textContent = arquivo.name;
+
+  if (erro) {
+    controleDeEnvioDaPlanilha.dataset.estado = "erro";
+    textoEnvioPlanilha.textContent = "Selecionar novamente";
+    estadoEnvioPlanilha.textContent = "Selecione um arquivo .xlsx válido.";
+    enviarPlanilhaPreenchida.disabled = !downloadDoTemplateConcluido;
+    return;
+  }
+
+  controleDeEnvioDaPlanilha.dataset.estado = "anexado";
+  textoEnvioPlanilha.textContent = downloadDoTemplateConcluido
+    ? "Enviar arquivo"
+    : "Conclua o Passo 1";
+  estadoEnvioPlanilha.textContent = downloadDoTemplateConcluido
+    ? "Arquivo anexado e pronto para enviar."
+    : "Arquivo anexado. Baixe o template para avançar.";
+  enviarPlanilhaPreenchida.disabled = !downloadDoTemplateConcluido;
+}
+
+function concluirDownloadDoTemplate() {
+  downloadDoTemplateConcluido = true;
+  textoDownloadTemplate.textContent = "Template baixado";
+  estadoDownloadTemplate.textContent = "Download concluído. Avance para o envio.";
+  ativarPassoDeEnvioDaPlanilha();
+
+  const arquivo = planilhaDeTempos.files[0];
+  const erro = arquivo ? validarPlanilhaDeTempos(arquivo) : "";
+  atualizarEstadoVisualDoEnvioDaPlanilha(arquivo, erro);
+}
+
+function iniciarEnvioVisualDaPlanilha() {
+  const arquivo = planilhaDeTempos.files[0];
+  const erro = validarPlanilhaDeTempos(arquivo);
+
+  if (erro || !downloadDoTemplateConcluido) {
+    definirErro(planilhaDeTempos, erroPlanilha, erro);
+
+    if (erro) {
+      mostrarToast(erro, "alert");
+    }
+
+    return;
+  }
+
+  controleDeEnvioDaPlanilha.dataset.estado = "enviando";
+  textoEnvioPlanilha.textContent = "Enviando...";
+  estadoEnvioPlanilha.textContent = "Enviando arquivo preenchido...";
+  enviarPlanilhaPreenchida.disabled = true;
+  progressoDoEnvioDaPlanilha.hidden = false;
+  progressoDoEnvioDaPlanilha.setAttribute("aria-valuenow", "0");
+  progressoDoEnvioDaPlanilha.setAttribute("aria-valuetext", "Enviando");
+
+  const movimentoReduzido = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const duracaoDoEnvio = movimentoReduzido
+    ? 0
+    : DURACAO_DO_ENVIO_VISUAL_EM_MS;
+
+  temporizadorDoEnvioDaPlanilha = window.setTimeout(() => {
+    controleDeEnvioDaPlanilha.dataset.estado = "concluido";
+    textoEnvioPlanilha.textContent = "Concluído";
+    estadoEnvioPlanilha.textContent = "Arquivo pronto para análise.";
+    progressoDoEnvioDaPlanilha.setAttribute("aria-valuenow", "100");
+    progressoDoEnvioDaPlanilha.setAttribute("aria-valuetext", "Concluído");
+    progressoDoEnvioDaPlanilha.hidden = true;
+    concluirPassoDeEnvioDaPlanilha();
+  }, duracaoDoEnvio);
 }
 
 function mostrarToast(mensagem, tipo = "status") {
@@ -643,14 +785,32 @@ previewFotoImagem.addEventListener("error", () => {
   );
 });
 
+baixarTemplateDeCorridas.addEventListener("click", () => {
+  concluirDownloadDoTemplate();
+});
+
+enviarPlanilhaPreenchida.addEventListener("click", () => {
+  const arquivo = planilhaDeTempos.files[0];
+  const erro = arquivo ? validarPlanilhaDeTempos(arquivo) : "";
+
+  if (!arquivo || erro) {
+    planilhaDeTempos.click();
+    return;
+  }
+
+  iniciarEnvioVisualDaPlanilha();
+});
+
 planilhaDeTempos.addEventListener("change", () => {
-  const erro = validarPlanilhaDeTempos(planilhaDeTempos.files[0]);
+  const arquivo = planilhaDeTempos.files[0];
+  const erro = validarPlanilhaDeTempos(arquivo);
 
   definirErro(
     planilhaDeTempos,
     erroPlanilha,
     erro,
   );
+  atualizarEstadoVisualDoEnvioDaPlanilha(arquivo, erro);
 
   if (erro) {
     mostrarToast(erro, "alert");
@@ -730,4 +890,5 @@ formulario.addEventListener("submit", async (evento) => {
 
 preencherCamposManuais();
 alternarFonteDeDados();
+atualizarEstadoVisualDoEnvioDaPlanilha();
 

@@ -257,39 +257,149 @@
           </div>
 
           <section
-            class="entrada-de-dados"
+            class="entrada-de-dados fluxo-da-planilha"
             id="entrada-planilha-de-tempos"
             aria-labelledby="titulo-planilha-de-tempos"
           >
-            <h2 id="titulo-planilha-de-tempos">Planilha de tempos</h2>
-            <p class="entrada-de-dados__descricao">
-              Envie o template com seus registros de corrida.
-            </p>
-            <a
-              class="link-download-template"
-              href="assets/templates/planilha_corrida.xlsx"
-              download="planilha_corrida.xlsx"
-            >
-              Baixar template .xlsx
-            </a>
-            <input
-              id="planilha-de-tempos"
-              name="planilhaDeTempos"
-              type="file"
-              accept=".xlsx"
-              required
-              aria-label="Enviar planilha de tempos"
-              aria-describedby="ajuda-planilha-de-tempos erro-planilha-de-tempos"
-            >
-            <p class="ajuda" id="ajuda-planilha-de-tempos">
-              Arquivo .xlsx de até 2 MB.
-            </p>
-            <p
-              class="erro"
-              id="erro-planilha-de-tempos"
-              aria-atomic="true"
-              aria-live="polite"
-            ></p>
+            <header class="fluxo-da-planilha__cabecalho">
+              <h2 id="titulo-planilha-de-tempos">Planilha de tempos</h2>
+              <p class="entrada-de-dados__descricao">
+                Baixe o modelo, preencha suas corridas e envie o arquivo.
+              </p>
+            </header>
+
+            <div class="passos-da-planilha">
+              <article
+                class="passo-da-planilha"
+                id="passo-download-template"
+                data-estado="ativo"
+              >
+                <p class="etiqueta">Passo 1</p>
+                <h3>Baixe o template</h3>
+                <a
+                  class="link-download-template acao-do-passo"
+                  id="baixar-template-de-corridas"
+                  href="assets/templates/planilha_corrida.xlsx"
+                  download="planilha_corrida.xlsx"
+                  aria-describedby="estado-download-template"
+                >
+                  <span class="acao-do-passo__icone" aria-hidden="true">
+                    <svg
+                      class="acao-do-passo__icone-padrao"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"></path>
+                    </svg>
+                    <svg
+                      class="acao-do-passo__icone-concluido"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="m5 12 4 4L19 6"></path>
+                    </svg>
+                  </span>
+                  <span id="texto-download-template">
+                    Baixar template .xlsx
+                  </span>
+                </a>
+                <p
+                  class="estado-do-passo"
+                  id="estado-download-template"
+                  aria-live="polite"
+                >
+                  Pronto para baixar.
+                </p>
+              </article>
+
+              <article
+                class="passo-da-planilha"
+                id="passo-envio-planilha"
+                data-estado="pendente"
+              >
+                <p class="etiqueta">Passo 2</p>
+                <h3>Envie o arquivo preenchido</h3>
+
+                <div
+                  class="controle-de-envio"
+                  id="controle-de-envio-da-planilha"
+                  data-estado="vazio"
+                >
+                  <input
+                    id="planilha-de-tempos"
+                    name="planilhaDeTempos"
+                    type="file"
+                    accept=".xlsx"
+                    required
+                    aria-label="Enviar planilha de tempos"
+                    aria-describedby="estado-envio-planilha ajuda-planilha-de-tempos erro-planilha-de-tempos"
+                  >
+
+                  <div class="arquivo-selecionado" aria-live="polite">
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M7 3h7l4 4v14H7zM14 3v5h5"></path>
+                    </svg>
+                    <span id="nome-da-planilha-selecionada">
+                      Nenhum arquivo selecionado
+                    </span>
+                  </div>
+
+                  <button
+                    class="acao-do-passo acao-de-envio"
+                    id="enviar-planilha-preenchida"
+                    type="button"
+                    aria-describedby="estado-envio-planilha"
+                    aria-controls="planilha-de-tempos"
+                    disabled
+                  >
+                    <span class="acao-do-passo__icone" aria-hidden="true">
+                      <svg
+                        class="acao-do-passo__icone-padrao"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 21V9m0 0-5 5m5-5 5 5M5 4h14"></path>
+                      </svg>
+                      <svg
+                        class="acao-do-passo__icone-concluido"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="m5 12 4 4L19 6"></path>
+                      </svg>
+                    </span>
+                    <span id="texto-envio-planilha">Selecionar arquivo</span>
+                  </button>
+
+                  <div
+                    class="progresso-do-envio"
+                    id="progresso-do-envio-da-planilha"
+                    role="progressbar"
+                    aria-label="Progresso do envio da planilha"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuetext="Aguardando envio"
+                    hidden
+                  >
+                    <span class="progresso-do-envio__barra"></span>
+                  </div>
+
+                  <p
+                    class="estado-do-passo"
+                    id="estado-envio-planilha"
+                    aria-live="polite"
+                  >
+                    Conclua o Passo 1 para selecionar o arquivo.
+                  </p>
+                </div>
+
+                <p class="ajuda" id="ajuda-planilha-de-tempos">
+                  Arquivo .xlsx de até 2 MB.
+                </p>
+                <p
+                  class="erro"
+                  id="erro-planilha-de-tempos"
+                  aria-atomic="true"
+                  aria-live="polite"
+                ></p>
+              </article>
+            </div>
           </section>
 
           <section

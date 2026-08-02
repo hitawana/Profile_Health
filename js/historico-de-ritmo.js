@@ -7,6 +7,9 @@ const formatadorDaDataDaCorrida = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
+export const ROTULO_SEU_RITMO = "Seu ritmo";
+export const ROTULO_SUA_META = "Sua meta";
+
 export function ordenarCorridasPorData(corridasExtraidas) {
   return [...corridasExtraidas].sort((corridaA, corridaB) =>
     corridaA.dataDaCorrida.localeCompare(corridaB.dataDaCorrida),
@@ -14,52 +17,271 @@ export function ordenarCorridasPorData(corridasExtraidas) {
 }
 
 export function obterRotuloDoHistorico(corrida) {
-  if (corrida.nomeDaCorrida) {
-    return corrida.nomeDaCorrida;
-  }
-
   return formatadorDaDataDaCorrida.format(
     new Date(`${corrida.dataDaCorrida}T00:00:00Z`),
   );
 }
 
-function aplicarOpacidadeNaCor(corEmHexadecimal, opacidade) {
-  const hexadecimal = corEmHexadecimal.replace("#", "");
+export function obterTituloDoTooltipDoHistorico(corrida) {
+  const dataFormatada = obterRotuloDoHistorico(corrida);
 
-  if (!/^[\da-f]{6}$/i.test(hexadecimal)) {
-    return corEmHexadecimal;
-  }
-
-  const vermelho = Number.parseInt(hexadecimal.slice(0, 2), 16);
-  const verde = Number.parseInt(hexadecimal.slice(2, 4), 16);
-  const azul = Number.parseInt(hexadecimal.slice(4, 6), 16);
-
-  return `rgba(${vermelho}, ${verde}, ${azul}, ${opacidade})`;
+  return corrida.nomeDaCorrida
+    ? `${corrida.nomeDaCorrida} · ${dataFormatada}`
+    : dataFormatada;
 }
 
-function criarPreenchimentoEmGradiente(corDoDesignSystem) {
-  return (contexto) => {
-    const { chartArea, ctx } = contexto.chart;
-    const corInicial = aplicarOpacidadeNaCor(corDoDesignSystem, 0.36);
-    const corFinal = aplicarOpacidadeNaCor(corDoDesignSystem, 0);
+export function obterIndiceDoPrimeiroCrossover(ritmos, metas) {
+  return ritmos.findIndex((ritmo, indice) => {
+    const meta = metas[indice];
 
-    if (!chartArea) {
-      return corInicial;
+    return Number.isFinite(ritmo) && Number.isFinite(meta) && ritmo <= meta;
+  });
+}
+
+function interpolarCoordenada(inicial, final, proporcao) {
+  return inicial + (final - inicial) * proporcao;
+}
+
+export function calcularPontoInterpoladoDoCrossover({
+  metas,
+  pontosDasMetas,
+  pontosDosRitmos,
+  ritmos,
+}) {
+  for (let indice = 1; indice < ritmos.length; indice += 1) {
+    const indiceAnterior = indice - 1;
+    const ritmoAnterior = ritmos[indiceAnterior];
+    const ritmoAtual = ritmos[indice];
+    const metaAnterior = metas[indiceAnterior];
+    const metaAtual = metas[indice];
+    const pontoDoRitmoAnterior = pontosDosRitmos[indiceAnterior];
+    const pontoDoRitmoAtual = pontosDosRitmos[indice];
+    const pontoDaMetaAnterior = pontosDasMetas[indiceAnterior];
+    const pontoDaMetaAtual = pontosDasMetas[indice];
+    const valores = [ritmoAnterior, ritmoAtual, metaAnterior, metaAtual];
+    const pontos = [
+      pontoDoRitmoAnterior,
+      pontoDoRitmoAtual,
+      pontoDaMetaAnterior,
+      pontoDaMetaAtual,
+    ];
+
+    if (
+      valores.some((valor) => !Number.isFinite(valor)) ||
+      pontos.some(
+        (ponto) =>
+          !ponto ||
+          !Number.isFinite(ponto.x) ||
+          !Number.isFinite(ponto.y),
+      )
+    ) {
+      continue;
     }
 
-    const gradiente = ctx.createLinearGradient(
-      0,
-      chartArea.top,
-      0,
-      chartArea.bottom,
+    const diferencaAnterior = ritmoAnterior - metaAnterior;
+    const diferencaAtual = ritmoAtual - metaAtual;
+    const cruzouAbaixoDaMeta =
+      diferencaAnterior >= 0 && diferencaAtual <= 0;
+
+    if (!cruzouAbaixoDaMeta) {
+      continue;
+    }
+
+    const variacaoDaDiferenca = diferencaAnterior - diferencaAtual;
+    const proporcao =
+      variacaoDaDiferenca === 0
+        ? 0
+        : diferencaAnterior / variacaoDaDiferenca;
+    const xDoRitmo = interpolarCoordenada(
+      pontoDoRitmoAnterior.x,
+      pontoDoRitmoAtual.x,
+      proporcao,
+    );
+    const yDoRitmo = interpolarCoordenada(
+      pontoDoRitmoAnterior.y,
+      pontoDoRitmoAtual.y,
+      proporcao,
+    );
+    const xDaMeta = interpolarCoordenada(
+      pontoDaMetaAnterior.x,
+      pontoDaMetaAtual.x,
+      proporcao,
+    );
+    const yDaMeta = interpolarCoordenada(
+      pontoDaMetaAnterior.y,
+      pontoDaMetaAtual.y,
+      proporcao,
     );
 
-    gradiente.addColorStop(0, corInicial);
-    gradiente.addColorStop(1, corFinal);
+    return Object.freeze({
+      indiceAtual: indice,
+      indiceAnterior,
+      proporcao,
+      x: (xDoRitmo + xDaMeta) / 2,
+      y: (yDoRitmo + yDaMeta) / 2,
+    });
+  }
 
-    return gradiente;
-  };
+  return null;
 }
+
+function preencherPoligono(ctx, pontos) {
+  ctx.beginPath();
+  ctx.moveTo(pontos[0].x, pontos[0].y);
+
+  for (const ponto of pontos.slice(1)) {
+    ctx.lineTo(ponto.x, ponto.y);
+  }
+
+  ctx.closePath();
+  ctx.fill();
+}
+
+export const areaEntreRitmoEMetaPlugin = Object.freeze({
+  id: "areaEntreRitmoEMetaPlugin",
+  beforeDatasetsDraw(grafico, _argumentos, opcoes) {
+    const indiceDoSeuRitmo = grafico.data.datasets.findIndex(
+      ({ label }) => label === ROTULO_SEU_RITMO,
+    );
+    const indiceDaSuaMeta = grafico.data.datasets.findIndex(
+      ({ label }) => label === ROTULO_SUA_META,
+    );
+
+    if (indiceDoSeuRitmo < 0 || indiceDaSuaMeta < 0) {
+      return;
+    }
+
+    const pontosDoSeuRitmo =
+      grafico.getDatasetMeta(indiceDoSeuRitmo).data;
+    const pontosDaSuaMeta = grafico.getDatasetMeta(indiceDaSuaMeta).data;
+
+    if (pontosDoSeuRitmo.length < 2 || pontosDaSuaMeta.length < 2) {
+      return;
+    }
+
+    const { ctx } = grafico;
+
+    ctx.save();
+    ctx.fillStyle = opcoes.corDaArea;
+
+    for (let indice = 0; indice < pontosDoSeuRitmo.length - 1; indice += 1) {
+      const ritmoInicial = pontosDoSeuRitmo[indice];
+      const ritmoFinal = pontosDoSeuRitmo[indice + 1];
+      const metaInicial = pontosDaSuaMeta[indice];
+      const metaFinal = pontosDaSuaMeta[indice + 1];
+      const pontos = [ritmoInicial, ritmoFinal, metaFinal, metaInicial];
+
+      if (
+        pontos.some(
+          ({ x, y }) => !Number.isFinite(x) || !Number.isFinite(y),
+        )
+      ) {
+        continue;
+      }
+
+      const diferencaInicial = ritmoInicial.y - metaInicial.y;
+      const diferencaFinal = ritmoFinal.y - metaFinal.y;
+      const haCruzamento = diferencaInicial * diferencaFinal < 0;
+
+      if (!haCruzamento) {
+        preencherPoligono(ctx, pontos);
+        continue;
+      }
+
+      const proporcaoDoCruzamento =
+        Math.abs(diferencaInicial) /
+        (Math.abs(diferencaInicial) + Math.abs(diferencaFinal));
+      const pontoDoCruzamento = {
+        x:
+          ritmoInicial.x +
+          (ritmoFinal.x - ritmoInicial.x) * proporcaoDoCruzamento,
+        y:
+          ritmoInicial.y +
+          (ritmoFinal.y - ritmoInicial.y) * proporcaoDoCruzamento,
+      };
+
+      preencherPoligono(ctx, [
+        ritmoInicial,
+        pontoDoCruzamento,
+        metaInicial,
+      ]);
+      preencherPoligono(ctx, [
+        pontoDoCruzamento,
+        ritmoFinal,
+        metaFinal,
+      ]);
+    }
+
+    ctx.restore();
+  },
+});
+
+export const crossoverPlugin = Object.freeze({
+  id: "crossoverPlugin",
+  afterDatasetsDraw(grafico, _argumentos, opcoes) {
+    const indiceDoSeuRitmo = grafico.data.datasets.findIndex(
+      ({ label }) => label === ROTULO_SEU_RITMO,
+    );
+    const indiceDaSuaMeta = grafico.data.datasets.findIndex(
+      ({ label }) => label === ROTULO_SUA_META,
+    );
+
+    if (indiceDoSeuRitmo < 0 || indiceDaSuaMeta < 0) {
+      return;
+    }
+
+    const metadadosDoSeuRitmo = grafico.getDatasetMeta(indiceDoSeuRitmo);
+    const metadadosDaSuaMeta = grafico.getDatasetMeta(indiceDaSuaMeta);
+    const pontoDoCrossover = calcularPontoInterpoladoDoCrossover({
+      metas: grafico.data.datasets[indiceDaSuaMeta].data,
+      pontosDasMetas: metadadosDaSuaMeta.data,
+      pontosDosRitmos: metadadosDoSeuRitmo.data,
+      ritmos: grafico.data.datasets[indiceDoSeuRitmo].data,
+    });
+
+    if (!pontoDoCrossover || !grafico.chartArea) {
+      return;
+    }
+
+    const { chartArea, ctx } = grafico;
+    const pontoFicaNaMetadeDireita =
+      pontoDoCrossover.x > (chartArea.left + chartArea.right) / 2;
+    const textoCabeAcima =
+      pontoDoCrossover.y - opcoes.espacamentoDoTexto >=
+      chartArea.top + opcoes.tamanhoDaFonte;
+    const textoX =
+      pontoDoCrossover.x +
+      (pontoFicaNaMetadeDireita
+        ? -opcoes.espacamentoDoTexto
+        : opcoes.espacamentoDoTexto);
+    const textoY =
+      pontoDoCrossover.y +
+      (textoCabeAcima
+        ? -opcoes.espacamentoDoTexto
+        : opcoes.espacamentoDoTexto);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(
+      pontoDoCrossover.x,
+      pontoDoCrossover.y,
+      opcoes.raioDoDestaque,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fillStyle = opcoes.corDeFundo;
+    ctx.fill();
+    ctx.lineWidth = opcoes.espessuraDoDestaque;
+    ctx.strokeStyle = opcoes.corDeDestaque;
+    ctx.stroke();
+    ctx.fillStyle = opcoes.corDoTexto;
+    ctx.font = `700 ${opcoes.tamanhoDaFonte}px ${opcoes.fonteDoTexto}`;
+    ctx.textAlign = pontoFicaNaMetadeDireita ? "right" : "left";
+    ctx.textBaseline = textoCabeAcima ? "bottom" : "top";
+    ctx.fillText(opcoes.texto, textoX, textoY);
+    ctx.restore();
+  },
+});
 
 function criarEstiloDaSerie({
   corDaArea,
@@ -67,11 +289,11 @@ function criarEstiloDaSerie({
   visualizacaoDoDesignSystem,
 }) {
   return {
-    backgroundColor: criarPreenchimentoEmGradiente(corDaArea),
+    backgroundColor: corDaArea,
     borderColor: corDaLinha,
     borderWidth: visualizacaoDoDesignSystem.espaco1,
     cubicInterpolationMode: "monotone",
-    fill: "origin",
+    fill: false,
     pointBackgroundColor: visualizacaoDoDesignSystem.corSurface,
     pointBorderColor: corDaLinha,
     pointBorderWidth: visualizacaoDoDesignSystem.espaco1,
@@ -89,14 +311,18 @@ export function criarSerieDoRitmoProjetado({
   return {
     ...criarEstiloDaSerie({
       corDaArea: visualizacaoDoDesignSystem.corSupport,
-      corDaLinha: visualizacaoDoDesignSystem.corTextoPrimario,
+      corDaLinha: visualizacaoDoDesignSystem.corDivider,
       visualizacaoDoDesignSystem,
     }),
+    borderDash: [
+      visualizacaoDoDesignSystem.espaco2,
+      visualizacaoDoDesignSystem.espaco2,
+    ],
     data: Array.from(
       { length: quantidadeDeRotulos },
       () => ritmoProjetadoEmSegundosPorKm,
     ),
-    label: "Ritmo Projetado",
+    label: ROTULO_SUA_META,
   };
 }
 
@@ -107,20 +333,29 @@ export function criarConfiguracaoDoHistoricoDeRitmo(
   const corridasOrdenadas = ordenarCorridasPorData(corridasExtraidas);
 
   return {
+    plugins: [areaEntreRitmoEMetaPlugin, crossoverPlugin],
     type: "line",
     data: {
       labels: corridasOrdenadas.map(obterRotuloDoHistorico),
       datasets: [
         {
           ...criarEstiloDaSerie({
-            corDaArea: visualizacaoDoDesignSystem.corAccent,
+            corDaArea: visualizacaoDoDesignSystem.corAccentSoft,
             corDaLinha: visualizacaoDoDesignSystem.corAccent,
             visualizacaoDoDesignSystem,
           }),
           data: corridasOrdenadas.map(
             ({ ritmoPaceEmSegundosPorKm }) => ritmoPaceEmSegundosPorKm,
           ),
-          label: "Ritmo Histórico",
+          label: ROTULO_SEU_RITMO,
+          pointBackgroundColor: visualizacaoDoDesignSystem.corAccent,
+          pointBorderColor: visualizacaoDoDesignSystem.corSurface,
+          pointHoverRadius: visualizacaoDoDesignSystem.espaco2,
+          pointRadius(contexto) {
+            return contexto.dataIndex === contexto.dataset.data.length - 1
+              ? visualizacaoDoDesignSystem.espaco2
+              : 0;
+          },
         },
       ],
     },
@@ -135,6 +370,20 @@ export function criarConfiguracaoDoHistoricoDeRitmo(
         padding: visualizacaoDoDesignSystem.espaco2,
       },
       plugins: {
+        areaEntreRitmoEMetaPlugin: {
+          corDaArea: visualizacaoDoDesignSystem.corAccentSoft,
+        },
+        crossoverPlugin: {
+          corDeDestaque: visualizacaoDoDesignSystem.corAccent,
+          corDeFundo: visualizacaoDoDesignSystem.corSurface,
+          corDoTexto: visualizacaoDoDesignSystem.corTextoPrimario,
+          espacamentoDoTexto: visualizacaoDoDesignSystem.espaco5,
+          espessuraDoDestaque: visualizacaoDoDesignSystem.espaco1,
+          fonteDoTexto: visualizacaoDoDesignSystem.fonteCorpo,
+          raioDoDestaque: visualizacaoDoDesignSystem.espaco2,
+          tamanhoDaFonte: visualizacaoDoDesignSystem.espaco3,
+          texto: "Aqui você bateu sua meta",
+        },
         legend: {
           align: "end",
           display: true,
@@ -153,6 +402,14 @@ export function criarConfiguracaoDoHistoricoDeRitmo(
           bodyColor: visualizacaoDoDesignSystem.corSurface,
           borderColor: visualizacaoDoDesignSystem.corDivider,
           callbacks: {
+            title(contextos) {
+              const indiceDaCorrida = contextos[0]?.dataIndex;
+              const corrida = corridasOrdenadas[indiceDaCorrida];
+
+              return corrida
+                ? obterTituloDoTooltipDoHistorico(corrida)
+                : "";
+            },
             label(contexto) {
               return `${contexto.dataset.label}: ${formatarRitmoPace(
                 contexto.parsed.y,
@@ -201,7 +458,7 @@ export function criarConfiguracaoDoHistoricoDeRitmo(
             font: {
               family: visualizacaoDoDesignSystem.fonteCorpo,
             },
-            text: "Ritmo (min/km)",
+            text: ["Ritmo (min/km)", "menor = mais rápido"],
           },
         },
       },
@@ -247,6 +504,22 @@ export function adicionarRitmoProjetadoAoHistorico({
       serieDoRitmoProjetado;
   } else {
     graficoDoHistorico.data.datasets.push(serieDoRitmoProjetado);
+  }
+
+  const indiceDoSeuRitmo = graficoDoHistorico.data.datasets.findIndex(
+    ({ label }) => label === ROTULO_SEU_RITMO,
+  );
+  const indiceDaSuaMeta = graficoDoHistorico.data.datasets.findIndex(
+    ({ label }) => label === ROTULO_SUA_META,
+  );
+
+  if (indiceDoSeuRitmo >= 0 && indiceDaSuaMeta >= 0) {
+    const serieDoSeuRitmo =
+      graficoDoHistorico.data.datasets[indiceDoSeuRitmo];
+
+    serieDoSeuRitmo.backgroundColor =
+      visualizacaoDoDesignSystem.corAccentSoft;
+    serieDoSeuRitmo.fill = false;
   }
 
   graficoDoHistorico.update();

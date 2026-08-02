@@ -1,0 +1,31 @@
+# Profile Analytics — dependências do TK-02
+#
+# Este projeto usa Vanilla JavaScript, sem Python, npm ou etapa de build.
+# Este arquivo é um manifesto informativo; não deve ser executado com pip.
+
+# OBRIGATÓRIAS — Etapa 1: Extração de Dados
+SheetJS CE (pacote: xlsx) @ 0.20.3
+# Uso: ler planilha_corrida.xlsx integralmente no navegador.
+# Distribuição local esperada: assets/vendor/sheetjs/xlsx.full.min.js
+# Fonte oficial: https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
+
+# OBRIGATÓRIAS — Etapa 2: Renderização do Histórico
+Chart.js @ 4.5.1
+# Uso: renderizar o gráfico de evolução do Ritmo (Pace).
+# Distribuição local esperada: assets/vendor/chartjs/chart.umd.min.js
+# Distribuição indicada pela documentação oficial via jsDelivr:
+# https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js
+
+# SEM BIBLIOTECA EXTERNA — Etapa 3: Estimativa
+# Distância Média Histórica, Margem de Tolerância, Gatilho de Constância,
+# Gatilho de Mudança de Esforço, WMA, Riegel e Ritmo Projetado serão
+# implementados em módulos ES nativos do projeto.
+
+# RECURSOS NATIVOS DO NAVEGADOR — nenhuma instalação necessária
+# File / ArrayBuffer: entrada client-side da planilha.
+# console.log: validação temporária do array de corridas extraído.
+# ES Modules: organização da extração, histórico e estimativa.
+
+# DEPENDÊNCIAS VENDORIZADAS
+# As versões aprovadas acima estão armazenadas no projeto. Nenhuma requisição
+# externa é necessária em tempo de execução para SheetJS ou Chart.js.

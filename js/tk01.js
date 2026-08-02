@@ -10,6 +10,10 @@ import {
   calcularRitmoProjetado,
 } from "./estimativa-de-ritmo.js";
 import {
+  apresentarFormulaDaEstimativa,
+  apresentarGatilhoDaEstimativa,
+} from "./apresentacao-da-estimativa.js";
+import {
   adicionarRitmoProjetadoAoHistorico,
   renderizarHistoricoDeRitmo,
 } from "./historico-de-ritmo.js";
@@ -112,7 +116,13 @@ const margemDeTolerancia = document.querySelector(
   "#margem-de-tolerancia",
 );
 const gatilhoAcionado = document.querySelector("#gatilho-acionado");
+const detalheDoGatilhoAcionado = document.querySelector(
+  "#detalhe-do-gatilho-acionado",
+);
 const formulaAplicada = document.querySelector("#formula-aplicada");
+const detalheDaFormulaAplicada = document.querySelector(
+  "#detalhe-da-formula-aplicada",
+);
 const tempoTotalEstimado = document.querySelector(
   "#tempo-total-estimado",
 );
@@ -559,6 +569,7 @@ function obterVisualizacaoDoDesignSystem() {
     espaco1: lerTokenNumerico("--espaco-1"),
     espaco2: lerTokenNumerico("--espaco-2"),
     espaco3: lerTokenNumerico("--espaco-3"),
+    espaco5: lerTokenNumerico("--espaco-5"),
     fonteCorpo: tokens.getPropertyValue("--fonte-corpo").trim(),
     fonteDados: tokens.getPropertyValue("--fonte-dados").trim(),
   });
@@ -595,6 +606,14 @@ function preencherPainelAnalitico(
   metaDaProximaCorrida,
 ) {
   const quantidadeDeCorridas = corridasExtraidas.length;
+  const apresentacaoDoGatilho = apresentarGatilhoDaEstimativa(
+    estimativa.gatilhoAcionado,
+    estimativa,
+  );
+  const apresentacaoDaFormula = apresentarFormulaDaEstimativa(
+    estimativa.formulaAplicada,
+    estimativa,
+  );
 
   fotoDoPainel.src = enderecoDaPreviewDaFoto;
   fotoDoPainel.alt = `Foto de perfil de ${nomeOuApelido.value.trim()}`;
@@ -611,11 +630,15 @@ function preencherPainelAnalitico(
   distanciaDaMeta.textContent = formatarDistancia(
     estimativa.distanciaDaMetaKm,
   );
-  margemDeTolerancia.textContent = formatadorDePercentual.format(
+  margemDeTolerancia.textContent = `±${formatadorDePercentual.format(
     estimativa.margemDeTolerancia,
-  );
-  gatilhoAcionado.textContent = estimativa.gatilhoAcionado;
-  formulaAplicada.textContent = estimativa.formulaAplicada;
+  )} da distância média`;
+  gatilhoAcionado.textContent = apresentacaoDoGatilho.mensagem;
+  detalheDoGatilhoAcionado.textContent =
+    apresentacaoDoGatilho.detalheTecnico;
+  formulaAplicada.textContent = apresentacaoDaFormula.mensagem;
+  detalheDaFormulaAplicada.textContent =
+    apresentacaoDaFormula.detalheTecnico;
   tempoTotalEstimado.textContent = formatarTempoTotal(
     estimativa.tempoTotalEstimadoEmSegundos,
   );

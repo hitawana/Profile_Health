@@ -183,6 +183,16 @@
   font-weight: 700;
 }
 
+.decisao-da-estimativa__detalhe-tecnico {
+  display: block;
+  margin-top: var(--espaco-1);
+  color: var(--cor-texto-secundario);
+  font-family: var(--fonte-dados);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .ficha-da-meta__dados dd {
   overflow-wrap: anywhere;
 }
@@ -220,7 +230,7 @@
   }
 
   .decisao-da-estimativa__dados {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .decisao-da-estimativa__dados > div,
@@ -229,7 +239,7 @@
     border-left: 1px solid var(--cor-divider);
   }
 
-  .decisao-da-estimativa__dados > div:first-child,
+  .decisao-da-estimativa__dados > div:nth-child(odd),
   .ficha-da-meta__dados > div:nth-child(odd) {
     border-left: 0;
   }
@@ -247,7 +257,7 @@
   }
 
   .grade-de-kpis {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .kpi-resumido:nth-child(n) {

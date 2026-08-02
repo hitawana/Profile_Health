@@ -625,10 +625,6 @@
             <p>Meta</p>
             <strong class="kpi" id="distancia-da-meta">—</strong>
           </div>
-          <div class="kpi-resumido" role="listitem">
-            <p>Margem de Tolerância</p>
-            <strong class="kpi" id="margem-de-tolerancia">—</strong>
-          </div>
         </div>
 
         <article
@@ -668,13 +664,13 @@
           aria-labelledby="titulo-do-historico"
         >
           <div class="cartao-do-painel__cabecalho">
-            <p class="etiqueta">Histórico</p>
+            <p class="etiqueta">Sua evolução</p>
             <h2 id="titulo-do-historico">Evolução do Ritmo (Pace)</h2>
             <p>Corridas anteriores em ordem cronológica.</p>
           </div>
           <div class="historico-de-ritmo__grafico">
             <canvas id="grafico-do-historico-de-ritmo">
-              Gráfico com a evolução do Ritmo (Pace) das corridas informadas.
+              Gráfico com a evolução do seu ritmo nas corridas informadas.
             </canvas>
           </div>
         </article>
@@ -684,21 +680,47 @@
           aria-labelledby="titulo-da-decisao"
         >
           <div class="cartao-do-painel__cabecalho">
-            <p class="etiqueta">Roteamento da estimativa</p>
-            <h2 id="titulo-da-decisao">Método aplicado</h2>
+            <p class="etiqueta">Como calculamos</p>
+            <h2 id="titulo-da-decisao">Método da estimativa</h2>
           </div>
           <dl class="decisao-da-estimativa__dados">
             <div>
-              <dt>Gatilho acionado</dt>
-              <dd id="gatilho-acionado">—</dd>
+              <dt>Comparação com seu histórico</dt>
+              <dd>
+                <span id="gatilho-acionado">—</span>
+                <small
+                  class="decisao-da-estimativa__detalhe-tecnico"
+                  id="detalhe-do-gatilho-acionado"
+                ></small>
+              </dd>
             </div>
             <div>
-              <dt>Fórmula aplicada</dt>
-              <dd id="formula-aplicada">—</dd>
+              <dt>Cálculo escolhido</dt>
+              <dd>
+                <span id="formula-aplicada">—</span>
+                <small
+                  class="decisao-da-estimativa__detalhe-tecnico"
+                  id="detalhe-da-formula-aplicada"
+                ></small>
+              </dd>
             </div>
             <div>
-              <dt>Tempo total estimado</dt>
-              <dd class="dado-de-corrida" id="tempo-total-estimado">—</dd>
+              <dt>Faixa de comparação</dt>
+              <dd>
+                <span id="margem-de-tolerancia">—</span>
+                <small class="decisao-da-estimativa__detalhe-tecnico">
+                  Margem de Tolerância do cálculo
+                </small>
+              </dd>
+            </div>
+            <div>
+              <dt>Tempo estimado para a meta</dt>
+              <dd>
+                <span class="dado-de-corrida" id="tempo-total-estimado">—</span>
+                <small class="decisao-da-estimativa__detalhe-tecnico">
+                  Baseado no seu ritmo mais recente
+                </small>
+              </dd>
             </div>
           </dl>
         </article>

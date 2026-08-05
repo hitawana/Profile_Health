@@ -1271,11 +1271,12 @@ input[type="radio"] {
 
 .rodape__links {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--espaco-2) var(--espaco-4);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
 }
 
-.rodape__link-pendente {
+.rodape__link {
   color: var(--cor-accent-soft);
   font-family: var(--fonte-dados);
   font-size: 0.75rem;
